@@ -22,7 +22,7 @@
     .tab-btn.active { border-bottom: 2px solid #4f46e5; color: #4f46e5; font-weight: 600; }
     .mobile-nav-btn.active { color: #6366f1; }
 
-    /* CSS Texture ลอนคอนเทนเนอร์สีแดง Makro มิติสมจริง */
+    /* CSS Texture ลอนคอนเทนเนอร์สีแดง Makro */
     .makro-ribbed-bg {
       background-color: #b3000b;
       background-image: repeating-linear-gradient(
@@ -36,7 +36,7 @@
       );
     }
 
-    /* Print Styles for Perfect A4 Landscape (4-Up Grid) */
+    /* Print Styles for A4 Landscape (4-Up Grid) */
     @media print {
       @page {
         size: A4 landscape;
@@ -146,17 +146,17 @@
     <button onclick="switchTab('explorer')" id="mob-tab-explorer" class="mobile-nav-btn flex flex-col items-center gap-0.5"><i data-lucide="list" class="w-4 h-4"></i> สินค้า</button>
   </div>
 
-  <!-- Fallback/Upload Screen -->
+  <!-- Fallback Screen -->
   <div id="dropZoneContainer" class="max-w-4xl mx-auto px-4 py-8 flex-1 flex flex-col justify-center items-center hidden">
     <div class="w-full bg-rose-50 border border-rose-200 rounded-3xl p-6 md:p-8 text-center shadow-md flex flex-col items-center">
       <div class="p-4 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mb-4">
         <i data-lucide="shield-alert" class="w-8 h-8"></i>
       </div>
-      <h3 class="text-base font-bold text-rose-900">ติดข้อจำกัดความปลอดภัย (CORS) ของอีเมลองค์กร</h3>
+      <h3 class="text-base font-bold text-rose-900">ไม่สามารถเชื่อมต่อ Google Sheet ได้โดยตรง</h3>
       <p class="text-xs text-rose-700 mt-2 max-w-lg">
-        หากใช้ระบบ Google Workspace ของบริษัท ให้ไปที่ Google Sheet เมนู: <br>
+        หากเป็นชีตองค์กร ให้ไปที่ Google Sheet เมนู: <br>
         <b>ไฟล์ &gt; แชร์ &gt; เผยแพร่ไปยังเว็บ (Publish to web)</b> <br>
-        ➔ เลือก <b>"ค่าที่คั่นด้วยจุลภาค (.csv)"</b> ➔ กดเผยแพร่ แล้วก๊อปลิงก์มาวางด้านล่างครับ
+        ➔ เลือก <b>"ค่าที่คั่นด้วยจุลภาค (.csv)"</b> ➔ กดเผยแพร่ แล้ววางลิงก์ด้านล่างครับ
       </p>
       
       <div class="w-full max-w-md mt-6 space-y-3">
@@ -183,7 +183,7 @@
         <div class="flex gap-2 items-center">
           <div class="relative flex-1">
             <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5"></i>
-            <input type="text" id="globalSearch" placeholder="ค้นหา รหัส, ชื่อสินค้า, Dept, Class, ซัพพลายเออร์..." 
+            <input type="text" id="globalSearch" placeholder="ค้นหา รหัส, ชื่อสินค้า, Dept, Class, ซัพพลายเออร์, Buyer..." 
                    class="w-full pl-8 pr-3 py-1.5 sm:py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
           </div>
           <button onclick="toggleMobileFilters()" class="md:hidden p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl">
@@ -246,14 +246,16 @@
             </div>
             <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col">
               <h4 class="text-xs font-bold text-slate-700 uppercase mb-3 flex items-center gap-1.5"><i data-lucide="alert-circle" class="w-4 h-4 text-orange-500"></i> ⚠️ สรุปจำนวน SKU เฝ้าระวัง</h4>
-              <div class="grid grid-cols-2 gap-3 flex-1">
-                <div class="bg-blue-50/50 p-3 rounded-xl border border-blue-100 flex flex-col justify-center items-center"><span class="text-[10px] font-semibold text-blue-700 uppercase mb-1">Alert</span><span id="riskCountAL" class="text-xl sm:text-2xl font-bold text-blue-800 leading-none">0</span></div>
-                <div class="bg-amber-50/50 p-3 rounded-xl border border-amber-100 flex flex-col justify-center items-center"><span class="text-[10px] font-semibold text-amber-700 uppercase mb-1">Attention</span><span id="riskCountAT" class="text-xl sm:text-2xl font-bold text-amber-800 leading-none">0</span></div>
-                <div class="bg-orange-50/50 p-3 rounded-xl border border-orange-100 flex flex-col justify-center items-center"><span class="text-[10px] font-semibold text-orange-700 uppercase mb-1">Critical</span><span id="riskCountCR" class="text-xl sm:text-2xl font-bold text-orange-800 leading-none">0</span></div>
-                <div class="bg-rose-50/50 p-3 rounded-xl border border-rose-100 flex flex-col justify-center items-center"><span class="text-[10px] font-semibold text-rose-700 uppercase mb-1">Obsolete</span><span id="riskCountOB" class="text-xl sm:text-2xl font-bold text-rose-800 leading-none">0</span></div>
+              <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-2.5 flex-1">
+                <div class="bg-blue-50/50 p-2.5 rounded-xl border border-blue-100 flex flex-col justify-center items-center"><span class="text-[10px] font-semibold text-blue-700 uppercase mb-0.5">Alert</span><span id="riskCountAL" class="text-lg sm:text-xl font-bold text-blue-800 leading-none">0</span></div>
+                <div class="bg-amber-50/50 p-2.5 rounded-xl border border-amber-100 flex flex-col justify-center items-center"><span class="text-[10px] font-semibold text-amber-700 uppercase mb-0.5">Attention</span><span id="riskCountAT" class="text-lg sm:text-xl font-bold text-amber-800 leading-none">0</span></div>
+                <div class="bg-orange-50/50 p-2.5 rounded-xl border border-orange-100 flex flex-col justify-center items-center"><span class="text-[10px] font-semibold text-orange-700 uppercase mb-0.5">Critical (25%)</span><span id="riskCountCR" class="text-lg sm:text-xl font-bold text-orange-800 leading-none">0</span></div>
+                <div class="bg-rose-50/50 p-2.5 rounded-xl border border-rose-100 flex flex-col justify-center items-center"><span class="text-[10px] font-semibold text-rose-700 uppercase mb-0.5">Obsolete (50%)</span><span id="riskCountOB" class="text-lg sm:text-xl font-bold text-rose-800 leading-none">0</span></div>
+                <div class="bg-purple-50/50 p-2.5 rounded-xl border border-purple-100 flex flex-col justify-center items-center col-span-2 sm:col-span-1 lg:col-span-2"><span class="text-[10px] font-semibold text-purple-700 uppercase mb-0.5">Full Prov (FP 100%)</span><span id="riskCountFP" class="text-lg sm:text-xl font-bold text-purple-800 leading-none">0</span></div>
               </div>
             </div>
           </div>
+
           <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
             <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center">
               <div class="w-full flex justify-between items-center mb-2"><h4 class="text-xs font-bold text-slate-700 uppercase flex items-center gap-1.5"><i data-lucide="pie-chart" class="w-3.5 h-3.5 text-indigo-500"></i> สัดส่วนมูลค่าตาม Dept</h4></div>
@@ -266,17 +268,18 @@
           </div>
         </div>
 
-        <!-- TAB 2: AGING & RISK MATRIX -->
+        <!-- TAB 2: AGING & RISK MATRIX (Includes FP) -->
         <div id="view-aging" class="tab-view hidden space-y-4 sm:space-y-6">
-          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3">
-            <div class="bg-emerald-50 border border-emerald-100 p-3 sm:p-4 rounded-2xl"><span class="text-[10px] sm:text-[11px] font-semibold text-emerald-700 uppercase block">Normal (ปกติ)</span><h4 id="agingBucketNormal" class="text-base sm:text-xl font-bold text-emerald-800 mt-0.5">฿0</h4></div>
-            <div class="bg-blue-50 border border-blue-100 p-3 sm:p-4 rounded-2xl"><span class="text-[10px] sm:text-[11px] font-semibold text-blue-700 uppercase block">Alert (เฝ้าระวัง)</span><h4 id="agingBucketAlert" class="text-base sm:text-xl font-bold text-blue-800 mt-0.5">฿0</h4></div>
-            <div class="bg-amber-50 border border-amber-100 p-3 sm:p-4 rounded-2xl"><span class="text-[10px] sm:text-[11px] font-semibold text-amber-700 uppercase block">Attention (ติดตาม)</span><h4 id="agingBucketAttention" class="text-base sm:text-xl font-bold text-amber-800 mt-0.5">฿0</h4></div>
-            <div class="bg-orange-50 border border-orange-100 p-3 sm:p-4 rounded-2xl"><span class="text-[10px] sm:text-[11px] font-semibold text-orange-700 uppercase block">Critical (25%)</span><h4 id="agingBucketCritical" class="text-base sm:text-xl font-bold text-orange-800 mt-0.5">฿0</h4></div>
-            <div class="bg-rose-50 border border-rose-100 p-3 sm:p-4 rounded-2xl col-span-2 sm:col-span-1"><span class="text-[10px] sm:text-[11px] font-semibold text-rose-700 uppercase block">Obsolete (เสื่อมสภาพ)</span><h4 id="agingBucketObsolete" class="text-base sm:text-xl font-bold text-rose-800 mt-0.5">฿0</h4></div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
+            <div class="bg-emerald-50 border border-emerald-100 p-3 rounded-2xl"><span class="text-[10px] font-semibold text-emerald-700 uppercase block">Normal</span><h4 id="agingBucketNormal" class="text-sm sm:text-lg font-bold text-emerald-800 mt-0.5">฿0</h4></div>
+            <div class="bg-blue-50 border border-blue-100 p-3 rounded-2xl"><span class="text-[10px] font-semibold text-blue-700 uppercase block">Alert (AL)</span><h4 id="agingBucketAlert" class="text-sm sm:text-lg font-bold text-blue-800 mt-0.5">฿0</h4></div>
+            <div class="bg-amber-50 border border-amber-100 p-3 rounded-2xl"><span class="text-[10px] font-semibold text-amber-700 uppercase block">Attention (AT)</span><h4 id="agingBucketAttention" class="text-sm sm:text-lg font-bold text-amber-800 mt-0.5">฿0</h4></div>
+            <div class="bg-orange-50 border border-orange-100 p-3 rounded-2xl"><span class="text-[10px] font-semibold text-orange-700 uppercase block">Critical (CR 25%)</span><h4 id="agingBucketCritical" class="text-sm sm:text-lg font-bold text-orange-800 mt-0.5">฿0</h4></div>
+            <div class="bg-rose-50 border border-rose-100 p-3 rounded-2xl"><span class="text-[10px] font-semibold text-rose-700 uppercase block">Obsolete (OB 50%)</span><h4 id="agingBucketObsolete" class="text-sm sm:text-lg font-bold text-rose-800 mt-0.5">฿0</h4></div>
+            <div class="bg-purple-50 border border-purple-100 p-3 rounded-2xl"><span class="text-[10px] font-semibold text-purple-700 uppercase block">Full Prov (FP 100%)</span><h4 id="agingBucketFP" class="text-sm sm:text-lg font-bold text-purple-800 mt-0.5">฿0</h4></div>
           </div>
           <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-            <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col"><h4 class="text-xs font-bold text-slate-700 uppercase mb-2">มูลค่าสต็อกตาม Aging Tier</h4><div class="w-full h-64 sm:h-72 relative"><canvas id="agingTierChart"></canvas></div></div>
+            <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col"><h4 class="text-xs font-bold text-slate-700 uppercase mb-2">มูลค่าสต็อกตาม Aging Tier (รวม FP)</h4><div class="w-full h-64 sm:h-72 relative"><canvas id="agingTierChart"></canvas></div></div>
             <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col"><h4 class="text-xs font-bold text-slate-700 uppercase mb-2">โครงสร้างเงินสำรอง Aging</h4><div class="w-full h-64 sm:h-72 relative"><canvas id="agingProvisionBreakdownChart"></canvas></div></div>
           </div>
         </div>
@@ -315,7 +318,7 @@
                     <th class="p-3 cursor-pointer" onclick="sortTable('itemNo')">รหัสสินค้า ⬍</th>
                     <th class="p-3 min-w-[200px] cursor-pointer" onclick="sortTable('itemDesc')">ชื่อสินค้า ⬍</th>
                     <th class="p-3 cursor-pointer" onclick="sortTable('deptNo')">Dept ⬍</th>
-                    <th class="p-3 cursor-pointer" onclick="sortTable('fullClass')">Class ⬍</th>
+                    <th class="p-3 cursor-pointer" onclick="sortTable('fullClass')">Class (รหัส - ชื่อ) ⬍</th>
                     <th class="p-3 cursor-pointer" onclick="sortTable('agingStatus')">สถานะ ⬍</th>
                     <th class="p-3 text-right cursor-pointer" onclick="sortTable('stockQty')">คงเหลือ ⬍</th>
                     <th class="p-3 text-right cursor-pointer text-rose-700 font-semibold" onclick="sortTable('buyPrice')">WAC ⬍</th>
@@ -399,8 +402,8 @@
       'AL': { label: 'AL - Alert (เฝ้าระวัง)', short: 'Alert', color: 'bg-blue-50 text-blue-700 border-blue-200' },
       'AT': { label: 'AT - Attention (ติดตาม)', short: 'Attention', color: 'bg-amber-50 text-amber-700 border-amber-200' },
       'CR': { label: 'CR - Critical (วิกฤต 25%)', short: 'Critical', color: 'bg-orange-50 text-orange-700 border-orange-200' },
-      'OB': { label: 'OB - Obsolete (เสื่อมสภาพ)', short: 'Obsolete', color: 'bg-rose-50 text-rose-700 border-rose-200' },
-      'FP': { label: 'FP - Full Provision (สำรอง 100%)', short: 'Full Prov', color: 'bg-purple-50 text-purple-700 border-purple-200' }
+      'OB': { label: 'OB - Obsolete (เสื่อมสภาพ 50%)', short: 'Obsolete', color: 'bg-rose-50 text-rose-700 border-rose-200' },
+      'FP': { label: 'FP - Full Provision (สำรอง 100%)', short: 'Full Prov (FP)', color: 'bg-purple-50 text-purple-700 border-purple-200' }
     };
 
     function getStatusBadge(code) {
@@ -408,17 +411,31 @@
       return `<span class="px-2 py-0.5 rounded text-[10px] font-semibold border ${info.color}">${info.short}</span>`;
     }
 
-    function refreshIcons() { if (window.lucide) lucide.createIcons(); }
-    function showLoading(show, title = 'กำลังประมวลผล...', desc = 'กรุณารอสักครู่') {
-      document.getElementById('loadingTitle').innerText = title; document.getElementById('loadingDesc').innerText = desc; document.getElementById('loadingOverlay').classList.toggle('hidden', !show);
+    function safeStr(val) {
+      return String(val ?? '').trim().toLowerCase();
     }
+
+    function refreshIcons() { if (window.lucide) lucide.createIcons(); }
+    
+    function showLoading(show, title = 'กำลังประมวลผล...', desc = 'กรุณารอสักครู่') {
+      document.getElementById('loadingTitle').innerText = title; 
+      document.getElementById('loadingDesc').innerText = desc; 
+      document.getElementById('loadingOverlay').classList.toggle('hidden', !show);
+    }
+    
     function toggleMobileFilters() { document.getElementById('filterSection').classList.toggle('hidden'); }
 
     function switchTab(tabId) {
       currentTab = tabId;
-      document.querySelectorAll('.tab-view').forEach(el => el.classList.add('hidden')); document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active')); document.querySelectorAll('.mobile-nav-btn').forEach(el => el.classList.remove('active'));
-      const targetView = document.getElementById('view-' + tabId); const targetBtn = document.getElementById('tab-' + tabId); const targetMobBtn = document.getElementById('mob-tab-' + tabId);
-      if (targetView) targetView.classList.remove('hidden'); if (targetBtn) targetBtn.classList.add('active'); if (targetMobBtn) targetMobBtn.classList.add('active');
+      document.querySelectorAll('.tab-view').forEach(el => el.classList.add('hidden')); 
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active')); 
+      document.querySelectorAll('.mobile-nav-btn').forEach(el => el.classList.remove('active'));
+      const targetView = document.getElementById('view-' + tabId); 
+      const targetBtn = document.getElementById('tab-' + tabId); 
+      const targetMobBtn = document.getElementById('mob-tab-' + tabId);
+      if (targetView) targetView.classList.remove('hidden'); 
+      if (targetBtn) targetBtn.classList.add('active'); 
+      if (targetMobBtn) targetMobBtn.classList.add('active');
       setTimeout(() => { renderVisibleTabCharts(); }, 30);
     }
 
@@ -430,72 +447,191 @@
     function cleanRow(row) {
       const deptNo = row['Department No'] !== undefined && row['Department No'] !== null ? String(row['Department No']).replace('.0', '') : 'N/A';
       const rawStatus = row['Aging Status'] ? String(row['Aging Status']).trim().toUpperCase() : 'NORMAL';
-      const sellPrice = Number(row['Selling Price'] || 0); const buyPrice = Number(row['Buy Price (WAC)'] || 0);
+      const sellPrice = Number(row['Selling Price'] || 0); 
+      const buyPrice = Number(row['Buy Price (WAC)'] || 0);
       const discountPct = buyPrice > 0 ? Math.round(((buyPrice - sellPrice) / buyPrice) * 100) : 0;
-      const classNoStr = row['Class No'] !== undefined && row['Class No'] !== null ? String(row['Class No']).replace('.0', '') : '';
+      
+      // ดึงเลข Class No และชื่อ Class Desc
+      const classNoStr = row['Class No'] !== undefined && row['Class No'] !== null && String(row['Class No']).trim() !== ''
+        ? String(row['Class No']).replace('.0', '').trim()
+        : (row['Class'] !== undefined ? String(row['Class']).replace('.0', '').trim() : '');
       const rawClassDesc = row['Class Desc'] || row['Class Name'] || 'Other';
+      
+      // รวมเป็น "Class No - Class Desc" เสมอ
       const fullClass = classNoStr ? `${classNoStr} - ${rawClassDesc}` : rawClassDesc;
       
       return {
-        itemNo: row['Item No'] ? String(row['Item No']).replace('.0', '') : '-', itemDesc: row['Item Desc'] || 'ไม่ระบุชื่อสินค้า',
-        classNo: classNoStr, classDesc: rawClassDesc, fullClass: fullClass, subclassDesc: row['Subclass Desc'] || rawClassDesc,
-        deptNo: deptNo, department: row['Department Desc'] || 'Other', agingStatus: rawStatus, buyer: row['Buyer Name'] || row['Buyer'] || 'Unknown',
-        supplierNo: row['Supplier No'] || '-', supplier: row['Supplier Desc'] || 'ไม่ระบุผู้ผลิต', uom: row['UOM'] || 'EA',
-        ownBrand: row['Own Brand'] === 'Y' ? 'Own Brand (Y)' : 'Commercial (N)', isOwnBrand: row['Own Brand'] === 'Y',
-        lastDelivery: row['Last Delivery Date'] || '-', lastSold: row['Last Sold Date'] || '-',
-        stockQty: Number(row['Stock Qty'] || 0), agingDays: Number(row['No of Aging Days'] || 0), nbsDays: Number(row['No of NBS Days'] || 0),
-        sellPrice: sellPrice, buyPrice: buyPrice, discountPct: discountPct, grandTotal: Number(row['Grand Total'] || 0), normalAging: Number(row['Normal (Aging)'] || 0),
-        alert: Number(row['Alert'] || 0), attention: Number(row['Attention'] || 0), critical: Number(row['Critical'] || 0), obsolete: Number(row['Obsolete'] || 0),
-        agingProv25: Number(row['Aging Provision Critical 25%'] || 0), agingProv50: Number(row['Aging Provision Obsolete 50%'] || 0), agingProv100: Number(row['Aging Provision 100%'] || 0),
-        agingProvision: Number(row['Total Aging Provision'] || 0), nbs60: Number(row['NBS Stock  > 60 Days'] || 0), nbs90: Number(row['NBS Stock > 90 Days'] || 0),
-        stockOver180: Number(row['Stock Over 180 Days'] || 0), nbsProv25: Number(row['NBS Provision 25%'] || 0), nbsProv50: Number(row['NBS Provision 50%'] || 0), nbsProv75: Number(row['NBS Provision 75%'] || 0), nbsProv100: Number(row['NBS Provision 100%'] || 0),
-        nbsProvision: Number(row['Total NBS Provision'] || 0), totalProvision: Number(row['Total Provision Net Aging and NBS'] || (Number(row['Total Aging Provision'] || 0) + Number(row['Total NBS Provision'] || 0)))
+        itemNo: row['Item No'] ? String(row['Item No']).replace('.0', '').trim() : '-', 
+        itemDesc: row['Item Desc'] || 'ไม่ระบุชื่อสินค้า',
+        classNo: classNoStr, 
+        classDesc: rawClassDesc, 
+        fullClass: fullClass, 
+        subclassDesc: row['Subclass Desc'] || rawClassDesc,
+        deptNo: deptNo, 
+        department: row['Department Desc'] || 'Other', 
+        agingStatus: rawStatus, 
+        buyer: row['Buyer Name'] || row['Buyer'] || 'Unknown',
+        supplierNo: row['Supplier No'] || '-', 
+        supplier: row['Supplier Desc'] || 'ไม่ระบุผู้ผลิต', 
+        uom: row['UOM'] || 'EA',
+        ownBrand: row['Own Brand'] === 'Y' ? 'Own Brand (Y)' : 'Commercial (N)', 
+        isOwnBrand: row['Own Brand'] === 'Y',
+        lastDelivery: row['Last Delivery Date'] || '-', 
+        lastSold: row['Last Sold Date'] || '-',
+        stockQty: Number(row['Stock Qty'] || 0), 
+        agingDays: Number(row['No of Aging Days'] || 0), 
+        nbsDays: Number(row['No of NBS Days'] || 0),
+        sellPrice: sellPrice, 
+        buyPrice: buyPrice, 
+        discountPct: discountPct, 
+        grandTotal: Number(row['Grand Total'] || 0), 
+        normalAging: Number(row['Normal (Aging)'] || 0),
+        alert: Number(row['Alert'] || 0), 
+        attention: Number(row['Attention'] || 0), 
+        critical: Number(row['Critical'] || 0), 
+        obsolete: Number(row['Obsolete'] || 0),
+        agingProv25: Number(row['Aging Provision Critical 25%'] || 0), 
+        agingProv50: Number(row['Aging Provision Obsolete 50%'] || 0), 
+        agingProv100: Number(row['Aging Provision 100%'] || 0),
+        agingProvision: Number(row['Total Aging Provision'] || 0), 
+        nbs60: Number(row['NBS Stock  > 60 Days'] || 0), 
+        nbs90: Number(row['NBS Stock > 90 Days'] || 0),
+        stockOver180: Number(row['Stock Over 180 Days'] || 0), 
+        nbsProv25: Number(row['NBS Provision 25%'] || 0), 
+        nbsProv50: Number(row['NBS Provision 50%'] || 0), 
+        nbsProv75: Number(row['NBS Provision 75%'] || 0), 
+        nbsProv100: Number(row['NBS Provision 100%'] || 0),
+        nbsProvision: Number(row['Total NBS Provision'] || 0), 
+        totalProvision: Number(row['Total Provision Net Aging and NBS'] || (Number(row['Total Aging Provision'] || 0) + Number(row['Total NBS Provision'] || 0)))
       };
     }
 
     function populateDropdowns(data) {
-      const deptSelect = document.getElementById('filterDept'); const statusSelect = document.getElementById('filterAgingStatus');
-      const deptMap = {}; data.forEach(d => { if (d.deptNo && !deptMap[d.deptNo]) deptMap[d.deptNo] = d.department; });
+      const deptSelect = document.getElementById('filterDept'); 
+      const statusSelect = document.getElementById('filterAgingStatus');
+      const deptMap = {}; 
+      data.forEach(d => { if (d.deptNo && !deptMap[d.deptNo]) deptMap[d.deptNo] = d.department; });
       deptSelect.innerHTML = '<option value="">ทุกรหัสแผนก (Dept No)</option>' + Object.entries(deptMap).map(([no, desc]) => `<option value="${no}">Dept ${no} - ${desc}</option>`).join('');
+      
       updateClassDropdown(data);
+      
       const presentStatuses = [...new Set(data.map(d => d.agingStatus))];
-      statusSelect.innerHTML = '<option value="">ทุกสถานะ Aging</option>' + presentStatuses.map(status => { const info = AGING_STATUS_MAP[status] || { label: status }; return `<option value="${status}">${info.label}</option>`; }).join('');
+      statusSelect.innerHTML = '<option value="">ทุกสถานะ Aging</option>' + presentStatuses.map(status => { 
+        const info = AGING_STATUS_MAP[status] || { label: status }; 
+        return `<option value="${status}">${info.label}</option>`; 
+      }).join('');
     }
 
     function updateClassDropdown(data, targetDept = '') {
-      const classSelect = document.getElementById('filterClass'); const currentSelected = classSelect.value;
+      const classSelect = document.getElementById('filterClass'); 
+      const currentSelected = classSelect.value;
       const source = targetDept ? data.filter(d => d.deptNo === targetDept) : data;
-      const classes = [...new Set(source.map(d => d.fullClass).filter(Boolean))].sort();
+      const classes = [...new Set(source.map(d => d.fullClass).filter(Boolean))].sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+      
       classSelect.innerHTML = '<option value="">ทุกหมวด (Class No - Desc)</option>' + classes.map(c => `<option value="${c}">${c}</option>`).join('');
       if (classes.includes(currentSelected)) classSelect.value = currentSelected;
     }
 
+    // ฟังก์ชันค้นหาและกรองข้อมูลแบบ Safe String 100%
     function applyFilters() {
-      const query = document.getElementById('globalSearch').value.trim().toLowerCase();
-      const selectedDept = document.getElementById('filterDept').value; const selectedClass = document.getElementById('filterClass').value;
-      const selectedStatus = document.getElementById('filterAgingStatus').value; const selectedRisk = document.getElementById('filterRisk').value;
+      const query = safeStr(document.getElementById('globalSearch')?.value);
+      const selectedDept = document.getElementById('filterDept')?.value || ''; 
+      const selectedClass = document.getElementById('filterClass')?.value || '';
+      const selectedStatus = document.getElementById('filterAgingStatus')?.value || ''; 
+      const selectedRisk = document.getElementById('filterRisk')?.value || '';
+
       filteredItems = rawItems.filter(item => {
-        const matchSearch = !query || item.itemNo.toLowerCase().includes(query) || item.itemDesc.toLowerCase().includes(query) || item.supplier.toLowerCase().includes(query) || item.buyer.toLowerCase().includes(query) || item.deptNo.toLowerCase().includes(query) || item.fullClass.toLowerCase().includes(query);
-        const matchDept = !selectedDept || item.deptNo === selectedDept; const matchClass = !selectedClass || item.fullClass === selectedClass; const matchStatus = !selectedStatus || item.agingStatus === selectedStatus;
-        let matchRisk = true; if (selectedRisk === 'provision') matchRisk = item.totalProvision > 0; else if (selectedRisk === 'nbs90') matchRisk = item.nbsDays >= 90; else if (selectedRisk === 'ownBrand') matchRisk = item.isOwnBrand;
+        const matchSearch = !query || 
+          safeStr(item.itemNo).includes(query) || 
+          safeStr(item.itemDesc).includes(query) || 
+          safeStr(item.supplier).includes(query) || 
+          safeStr(item.supplierNo).includes(query) || 
+          safeStr(item.buyer).includes(query) || 
+          safeStr(item.deptNo).includes(query) ||
+          safeStr(item.department).includes(query) ||
+          safeStr(item.classNo).includes(query) ||
+          safeStr(item.classDesc).includes(query) ||
+          safeStr(item.fullClass).includes(query) ||
+          safeStr(item.agingStatus).includes(query);
+
+        const matchDept = !selectedDept || item.deptNo === selectedDept; 
+        const matchClass = !selectedClass || item.fullClass === selectedClass; 
+        const matchStatus = !selectedStatus || item.agingStatus === selectedStatus;
+        
+        let matchRisk = true; 
+        if (selectedRisk === 'provision') matchRisk = item.totalProvision > 0; 
+        else if (selectedRisk === 'nbs90') matchRisk = item.nbsDays >= 90; 
+        else if (selectedRisk === 'ownBrand') matchRisk = item.isOwnBrand;
+        
         return matchSearch && matchDept && matchClass && matchStatus && matchRisk;
       });
-      currentPage = 1; updateUI();
+      
+      currentPage = 1; 
+      updateUI();
     }
 
     function updateKPIs() {
-      const totalVal = filteredItems.reduce((acc, r) => acc + r.grandTotal, 0); const totalSku = filteredItems.length;
-      const agingProv = filteredItems.reduce((acc, r) => acc + r.agingProvision, 0); const nbsProv = filteredItems.reduce((acc, r) => acc + r.nbsProvision, 0); const normalVal = filteredItems.reduce((acc, r) => acc + r.normalAging, 0);
-      document.getElementById('kpiTotalValue').innerText = formatCurrency(totalVal); document.getElementById('kpiTotalSku').innerText = formatNumber(totalSku);
-      document.getElementById('kpiAgingProv').innerText = formatCurrency(agingProv); document.getElementById('kpiNbsProv').innerText = formatCurrency(nbsProv); document.getElementById('kpiNormalStock').innerText = formatCurrency(normalVal);
-      const agingPct = totalVal > 0 ? ((agingProv / totalVal) * 100).toFixed(1) : 0; const nbsPct = totalVal > 0 ? ((nbsProv / totalVal) * 100).toFixed(1) : 0; const normPct = totalVal > 0 ? ((normalVal / totalVal) * 100).toFixed(1) : 0;
-      document.getElementById('kpiAgingProvRatio').innerText = `${agingPct}% ของรวม`; document.getElementById('kpiNbsProvRatio').innerText = `${nbsPct}% ของรวม`; document.getElementById('kpiNormalRatio').innerText = `${normPct}% ของรวม`;
-      document.getElementById('barAgingProv').style.width = `${Math.min(agingPct, 100)}%`; document.getElementById('barNbsProv').style.width = `${Math.min(nbsPct, 100)}%`; document.getElementById('barNormal').style.width = `${Math.min(normPct, 100)}%`;
-      document.getElementById('riskCountAL').innerText = formatNumber(filteredItems.filter(r => r.agingStatus === 'AL').length); document.getElementById('riskCountAT').innerText = formatNumber(filteredItems.filter(r => r.agingStatus === 'AT').length); document.getElementById('riskCountCR').innerText = formatNumber(filteredItems.filter(r => r.agingStatus === 'CR').length); document.getElementById('riskCountOB').innerText = formatNumber(filteredItems.filter(r => r.agingStatus === 'OB').length);
+      const totalVal = filteredItems.reduce((acc, r) => acc + r.grandTotal, 0); 
+      const totalSku = filteredItems.length;
+      const agingProv = filteredItems.reduce((acc, r) => acc + r.agingProvision, 0); 
+      const nbsProv = filteredItems.reduce((acc, r) => acc + r.nbsProvision, 0); 
+      const normalVal = filteredItems.reduce((acc, r) => acc + r.normalAging, 0);
+      
+      document.getElementById('kpiTotalValue').innerText = formatCurrency(totalVal); 
+      document.getElementById('kpiTotalSku').innerText = formatNumber(totalSku);
+      document.getElementById('kpiAgingProv').innerText = formatCurrency(agingProv); 
+      document.getElementById('kpiNbsProv').innerText = formatCurrency(nbsProv); 
+      document.getElementById('kpiNormalStock').innerText = formatCurrency(normalVal);
+      
+      const agingPct = totalVal > 0 ? ((agingProv / totalVal) * 100).toFixed(1) : 0; 
+      const nbsPct = totalVal > 0 ? ((nbsProv / totalVal) * 100).toFixed(1) : 0; 
+      const normPct = totalVal > 0 ? ((normalVal / totalVal) * 100).toFixed(1) : 0;
+      
+      document.getElementById('kpiAgingProvRatio').innerText = `${agingPct}% ของรวม`; 
+      document.getElementById('kpiNbsProvRatio').innerText = `${nbsPct}% ของรวม`; 
+      document.getElementById('kpiNormalRatio').innerText = `${normPct}% ของรวม`;
+      
+      document.getElementById('barAgingProv').style.width = `${Math.min(agingPct, 100)}%`; 
+      document.getElementById('barNbsProv').style.width = `${Math.min(nbsPct, 100)}%`; 
+      document.getElementById('barNormal').style.width = `${Math.min(normPct, 100)}%`;
+      
+      // สรุปจำนวน SKU เฝ้าระวัง (รวม FP)
+      document.getElementById('riskCountAL').innerText = formatNumber(filteredItems.filter(r => r.agingStatus === 'AL').length); 
+      document.getElementById('riskCountAT').innerText = formatNumber(filteredItems.filter(r => r.agingStatus === 'AT').length); 
+      document.getElementById('riskCountCR').innerText = formatNumber(filteredItems.filter(r => r.agingStatus === 'CR').length); 
+      document.getElementById('riskCountOB').innerText = formatNumber(filteredItems.filter(r => r.agingStatus === 'OB').length);
+      document.getElementById('riskCountFP').innerText = formatNumber(filteredItems.filter(r => r.agingStatus === 'FP').length);
+      
+      // Top 5 Items
       const top5 = [...filteredItems].sort((a, b) => b.grandTotal - a.grandTotal).slice(0, 5);
-      document.getElementById('top5ItemsList').innerHTML = top5.map((item, idx) => `<div class="flex items-center justify-between p-2 hover:bg-slate-50 rounded-lg border border-slate-50 transition-colors"><div class="flex items-center gap-2.5 overflow-hidden"><div class="w-5 h-5 sm:w-6 sm:h-6 rounded bg-slate-100 text-slate-500 flex items-center justify-center text-[10px] sm:text-xs font-bold flex-shrink-0">${idx + 1}</div><div class="truncate"><p class="text-[11px] sm:text-xs font-bold text-slate-800 truncate" title="${item.itemDesc}">${item.itemNo} - ${item.itemDesc}</p><p class="text-[9px] sm:text-[10px] text-slate-500 truncate mt-0.5">Dept ${item.deptNo} | ${item.fullClass}</p></div></div><div class="text-right flex-shrink-0 ml-2"><p class="text-xs sm:text-sm font-bold text-rose-600">${formatCurrency(item.grandTotal)}</p><p class="text-[9px] text-slate-400 mt-0.5">เหลือ: ${formatNumber(item.stockQty)}</p></div></div>`).join('') || '<div class="text-center p-4 text-slate-400 text-xs">ไม่พบข้อมูล</div>';
-      document.getElementById('agingBucketNormal').innerText = formatCurrency(normalVal); document.getElementById('agingBucketAlert').innerText = formatCurrency(filteredItems.reduce((a, r) => a + r.alert, 0)); document.getElementById('agingBucketAttention').innerText = formatCurrency(filteredItems.reduce((a, r) => a + r.attention, 0)); document.getElementById('agingBucketCritical').innerText = formatCurrency(filteredItems.reduce((a, r) => a + r.critical, 0)); document.getElementById('agingBucketObsolete').innerText = formatCurrency(filteredItems.reduce((a, r) => a + r.obsolete, 0));
-      document.getElementById('nbsVal60').innerText = formatCurrency(filteredItems.reduce((a, r) => a + r.nbs60, 0)); document.getElementById('nbsVal90').innerText = formatCurrency(filteredItems.reduce((a, r) => a + r.nbs90, 0)); document.getElementById('nbsVal180').innerText = formatCurrency(filteredItems.reduce((a, r) => a + r.stockOver180, 0));
+      document.getElementById('top5ItemsList').innerHTML = top5.map((item, idx) => `
+        <div class="flex items-center justify-between p-2 hover:bg-slate-50 rounded-lg border border-slate-50 transition-colors">
+          <div class="flex items-center gap-2.5 overflow-hidden">
+            <div class="w-5 h-5 sm:w-6 sm:h-6 rounded bg-slate-100 text-slate-500 flex items-center justify-center text-[10px] sm:text-xs font-bold flex-shrink-0">${idx + 1}</div>
+            <div class="truncate">
+              <p class="text-[11px] sm:text-xs font-bold text-slate-800 truncate" title="${item.itemDesc}">${item.itemNo} - ${item.itemDesc}</p>
+              <p class="text-[9px] sm:text-[10px] text-slate-500 truncate mt-0.5">Dept ${item.deptNo} | ${item.fullClass}</p>
+            </div>
+          </div>
+          <div class="text-right flex-shrink-0 ml-2">
+            <p class="text-xs sm:text-sm font-bold text-rose-600">${formatCurrency(item.grandTotal)}</p>
+            <p class="text-[9px] text-slate-400 mt-0.5">เหลือ: ${formatNumber(item.stockQty)}</p>
+          </div>
+        </div>
+      `).join('') || '<div class="text-center p-4 text-slate-400 text-xs">ไม่พบข้อมูล</div>';
+      
+      // Aging Buckets (รวม FP)
+      const fpVal = filteredItems.filter(r => r.agingStatus === 'FP').reduce((a, r) => a + r.grandTotal, 0);
+      document.getElementById('agingBucketNormal').innerText = formatCurrency(normalVal); 
+      document.getElementById('agingBucketAlert').innerText = formatCurrency(filteredItems.reduce((a, r) => a + r.alert, 0)); 
+      document.getElementById('agingBucketAttention').innerText = formatCurrency(filteredItems.reduce((a, r) => a + r.attention, 0)); 
+      document.getElementById('agingBucketCritical').innerText = formatCurrency(filteredItems.reduce((a, r) => a + r.critical, 0)); 
+      document.getElementById('agingBucketObsolete').innerText = formatCurrency(filteredItems.reduce((a, r) => a + r.obsolete, 0));
+      document.getElementById('agingBucketFP').innerText = formatCurrency(fpVal);
+
+      document.getElementById('nbsVal60').innerText = formatCurrency(filteredItems.reduce((a, r) => a + r.nbs60, 0)); 
+      document.getElementById('nbsVal90').innerText = formatCurrency(filteredItems.reduce((a, r) => a + r.nbs90, 0)); 
+      document.getElementById('nbsVal180').innerText = formatCurrency(filteredItems.reduce((a, r) => a + r.stockOver180, 0));
     }
 
     function renderVisibleTabCharts() {
@@ -504,37 +640,114 @@
         const sortedDeptList = Object.entries(deptTotals).sort((a, b) => b[1] - a[1]);
         const top5Depts = sortedDeptList.slice(0, 5); const otherDeptSum = sortedDeptList.slice(5).reduce((sum, d) => sum + d[1], 0);
         const pieLabels = top5Depts.map(d => 'Dept ' + d[0]); const pieData = top5Depts.map(d => d[1]); if (otherDeptSum > 0) { pieLabels.push('อื่นๆ'); pieData.push(otherDeptSum); }
+        
         if (overviewPieChart) overviewPieChart.destroy();
         const ctxPie = document.getElementById('overviewPieChart')?.getContext('2d');
-        if (ctxPie) overviewPieChart = new Chart(ctxPie, { type: 'doughnut', data: { labels: pieLabels, datasets: [{ data: pieData, backgroundColor: ['#4f46e5', '#06b6d4', '#f59e0b', '#ec4899', '#10b981', '#94a3b8'], borderWidth: 2, hoverOffset: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { family: 'Prompt', size: 10 } } } }, cutout: '65%' } });
+        if (ctxPie) {
+          overviewPieChart = new Chart(ctxPie, { 
+            type: 'doughnut', 
+            data: { labels: pieLabels, datasets: [{ data: pieData, backgroundColor: ['#4f46e5', '#06b6d4', '#f59e0b', '#ec4899', '#10b981', '#94a3b8'], borderWidth: 2, hoverOffset: 4 }] }, 
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { family: 'Prompt', size: 10 } } } }, cutout: '65%' } 
+          });
+        }
+        
         const top8Depts = sortedDeptList.slice(0, 8);
         if (overviewDeptBarChart) overviewDeptBarChart.destroy();
         const ctxDeptBar = document.getElementById('overviewDeptBarChart')?.getContext('2d');
-        if (ctxDeptBar) overviewDeptBarChart = new Chart(ctxDeptBar, { type: 'bar', data: { labels: top8Depts.map(d => 'D' + d[0]), datasets: [ { label: 'สต็อกรวม', data: top8Depts.map(d => d[1]), backgroundColor: '#4f46e5', borderRadius: 4 }, { label: 'สำรอง Aging', data: top8Depts.map(d => filteredItems.filter(r => r.deptNo === d[0]).reduce((sum, r) => sum + r.agingProvision, 0)), backgroundColor: '#f59e0b', borderRadius: 4 }, { label: 'สำรอง NBS', data: top8Depts.map(d => filteredItems.filter(r => r.deptNo === d[0]).reduce((sum, r) => sum + r.nbsProvision, 0)), backgroundColor: '#f43f5e', borderRadius: 4 } ] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { boxWidth: 10, font: { family: 'Prompt', size: 9 } } } } } });
+        if (ctxDeptBar) {
+          overviewDeptBarChart = new Chart(ctxDeptBar, { 
+            type: 'bar', 
+            data: { 
+              labels: top8Depts.map(d => 'D' + d[0]), 
+              datasets: [ 
+                { label: 'สต็อกรวม', data: top8Depts.map(d => d[1]), backgroundColor: '#4f46e5', borderRadius: 4 }, 
+                { label: 'สำรอง Aging', data: top8Depts.map(d => filteredItems.filter(r => r.deptNo === d[0]).reduce((sum, r) => sum + r.agingProvision, 0)), backgroundColor: '#f59e0b', borderRadius: 4 }, 
+                { label: 'สำรอง NBS', data: top8Depts.map(d => filteredItems.filter(r => r.deptNo === d[0]).reduce((sum, r) => sum + r.nbsProvision, 0)), backgroundColor: '#f43f5e', borderRadius: 4 } 
+              ] 
+            }, 
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { boxWidth: 10, font: { family: 'Prompt', size: 9 } } } } } 
+          });
+        }
       } else if (currentTab === 'aging') {
+        // กราฟแท่ง Aging Tier รวม FP
         if (agingTierChart) agingTierChart.destroy();
         const ctxTier = document.getElementById('agingTierChart')?.getContext('2d');
-        if (ctxTier) agingTierChart = new Chart(ctxTier, { type: 'bar', data: { labels: ['Normal', 'Alert', 'Attention', 'Critical', 'Obsolete'], datasets: [{ data: [filteredItems.reduce((a, r) => a + r.normalAging, 0), filteredItems.reduce((a, r) => a + r.alert, 0), filteredItems.reduce((a, r) => a + r.attention, 0), filteredItems.reduce((a, r) => a + r.critical, 0), filteredItems.reduce((a, r) => a + r.obsolete, 0)], backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#f97316', '#ef4444'], borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
+        if (ctxTier) {
+          const fpVal = filteredItems.filter(r => r.agingStatus === 'FP').reduce((a, r) => a + r.grandTotal, 0);
+          agingTierChart = new Chart(ctxTier, { 
+            type: 'bar', 
+            data: { 
+              labels: ['Normal', 'Alert (AL)', 'Attention (AT)', 'Critical (CR)', 'Obsolete (OB)', 'Full Prov (FP)'], 
+              datasets: [{ 
+                data: [
+                  filteredItems.reduce((a, r) => a + r.normalAging, 0), 
+                  filteredItems.reduce((a, r) => a + r.alert, 0), 
+                  filteredItems.reduce((a, r) => a + r.attention, 0), 
+                  filteredItems.reduce((a, r) => a + r.critical, 0), 
+                  filteredItems.reduce((a, r) => a + r.obsolete, 0),
+                  fpVal
+                ], 
+                backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#f97316', '#ef4444', '#a855f7'], 
+                borderRadius: 6 
+              }] 
+            }, 
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } 
+          });
+        }
+        
+        // โครงสร้างเงินสำรอง Aging
         if (agingProvisionBreakdownChart) agingProvisionBreakdownChart.destroy();
         const ctxProv = document.getElementById('agingProvisionBreakdownChart')?.getContext('2d');
-        if (ctxProv) agingProvisionBreakdownChart = new Chart(ctxProv, { type: 'doughnut', data: { labels: ['Critical (25%)', 'Obsolete (50%)', 'Obsolete (100%)'], datasets: [{ data: [filteredItems.reduce((a, r) => a + r.agingProv25, 0), filteredItems.reduce((a, r) => a + r.agingProv50, 0), filteredItems.reduce((a, r) => a + r.agingProv100, 0)], backgroundColor: ['#f97316', '#f43f5e', '#881337'] }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { family: 'Prompt', size: 10 } } } }, cutout: '65%' } });
+        if (ctxProv) {
+          const fpProv = filteredItems.filter(r => r.agingStatus === 'FP').reduce((a, r) => a + r.agingProvision, 0);
+          agingProvisionBreakdownChart = new Chart(ctxProv, { 
+            type: 'doughnut', 
+            data: { 
+              labels: ['สำรอง Critical (25%)', 'สำรอง Obsolete (50%)', 'สำรอง 100% / Full Prov (FP)'], 
+              datasets: [{ 
+                data: [
+                  filteredItems.reduce((a, r) => a + r.agingProv25, 0), 
+                  filteredItems.reduce((a, r) => a + r.agingProv50, 0), 
+                  filteredItems.reduce((a, r) => a + r.agingProv100, 0) + fpProv
+                ], 
+                backgroundColor: ['#f97316', '#f43f5e', '#881337'] 
+              }] 
+            }, 
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { family: 'Prompt', size: 10 } } } }, cutout: '65%' } 
+          });
+        }
       } else if (currentTab === 'nbs') {
         if (nbsProvisionChart) nbsProvisionChart.destroy();
         const ctxNbs = document.getElementById('nbsProvisionChart')?.getContext('2d');
-        if (ctxNbs) nbsProvisionChart = new Chart(ctxNbs, { type: 'bar', data: { labels: ['25%', '50%', '75%', '100%'], datasets: [{ data: [filteredItems.reduce((a, r) => a + r.nbsProv25, 0), filteredItems.reduce((a, r) => a + r.nbsProv50, 0), filteredItems.reduce((a, r) => a + r.nbsProv75, 0), filteredItems.reduce((a, r) => a + r.nbsProv100, 0)], backgroundColor: '#e11d48', borderRadius: 6 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
+        if (ctxNbs) {
+          nbsProvisionChart = new Chart(ctxNbs, { 
+            type: 'bar', 
+            data: { 
+              labels: ['25%', '50%', '75%', '100%'], 
+              datasets: [{ data: [filteredItems.reduce((a, r) => a + r.nbsProv25, 0), filteredItems.reduce((a, r) => a + r.nbsProv50, 0), filteredItems.reduce((a, r) => a + r.nbsProv75, 0), filteredItems.reduce((a, r) => a + r.nbsProv100, 0)], backgroundColor: '#e11d48', borderRadius: 6 }] 
+            }, 
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } 
+          });
+        }
       } else if (currentTab === 'suppliers') {
-        const supTotals = {}; filteredItems.forEach(r => { supTotals[r.supplier] = (supTotals[r.supplier] || 0) + r.grandTotal; }); const topSups = Object.entries(supTotals).sort((a, b) => b[1] - a[1]).slice(0, 8);
+        const supTotals = {}; filteredItems.forEach(r => { supTotals[r.supplier] = (supTotals[r.supplier] || 0) + r.grandTotal; }); 
+        const topSups = Object.entries(supTotals).sort((a, b) => b[1] - a[1]).slice(0, 8);
         if (supplierBarChart) supplierBarChart.destroy();
         const ctxSup = document.getElementById('supplierBarChart')?.getContext('2d');
-        if (ctxSup) supplierBarChart = new Chart(ctxSup, { type: 'bar', indexAxis: 'y', data: { labels: topSups.map(s => s[0].slice(0, 12)), datasets: [{ data: topSups.map(s => s[1]), backgroundColor: '#6366f1', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
-        const buyerTotals = {}; filteredItems.forEach(r => { buyerTotals[r.buyer] = (buyerTotals[r.buyer] || 0) + r.grandTotal; }); const topBuyers = Object.entries(buyerTotals).sort((a, b) => b[1] - a[1]).slice(0, 8);
+        if (ctxSup) {
+          supplierBarChart = new Chart(ctxSup, { type: 'bar', indexAxis: 'y', data: { labels: topSups.map(s => s[0].slice(0, 12)), datasets: [{ data: topSups.map(s => s[1]), backgroundColor: '#6366f1', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
+        }
+        
+        const buyerTotals = {}; filteredItems.forEach(r => { buyerTotals[r.buyer] = (buyerTotals[r.buyer] || 0) + r.grandTotal; }); 
+        const topBuyers = Object.entries(buyerTotals).sort((a, b) => b[1] - a[1]).slice(0, 8);
         if (buyerBarChart) buyerBarChart.destroy();
         const ctxBuyer = document.getElementById('buyerBarChart')?.getContext('2d');
-        if (ctxBuyer) buyerBarChart = new Chart(ctxBuyer, { type: 'bar', indexAxis: 'y', data: { labels: topBuyers.map(b => b[0].slice(0, 12)), datasets: [{ data: topBuyers.map(b => b[1]), backgroundColor: '#0ea5e9', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
+        if (ctxBuyer) {
+          buyerBarChart = new Chart(ctxBuyer, { type: 'bar', indexAxis: 'y', data: { labels: topBuyers.map(b => b[0].slice(0, 12)), datasets: [{ data: topBuyers.map(b => b[1]), backgroundColor: '#0ea5e9', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
+        }
       }
     }
 
-    // ✨ Central update UI function
     function updateUI() {
       updateKPIs();
       renderVisibleTabCharts();
@@ -547,96 +760,289 @@
       if (selectedItemIds.has(itemNo)) selectedItemIds.delete(itemNo);
       else {
         selectedItemIds.add(itemNo);
-        if (!clearanceItemsData[itemNo]) { const item = rawItems.find(r => r.itemNo === itemNo); clearanceItemsData[itemNo] = { originalWac: item ? item.buyPrice : 0, currentSellPrice: item ? item.sellPrice : 0, promoText: document.getElementById('promoDateText').value }; }
+        if (!clearanceItemsData[itemNo]) { 
+          const item = rawItems.find(r => r.itemNo === itemNo); 
+          clearanceItemsData[itemNo] = { originalWac: item ? item.buyPrice : 0, currentSellPrice: item ? item.sellPrice : 0, promoText: document.getElementById('promoDateText').value }; 
+        }
       }
       updateSelectionUI();
     }
+    
     function selectAllCurrentPage() {
-      const startIdx = (currentPage - 1) * itemsPerPage; const pageItems = filteredItems.slice(startIdx, startIdx + itemsPerPage);
-      pageItems.forEach(item => { selectedItemIds.add(item.itemNo); if (!clearanceItemsData[item.itemNo]) clearanceItemsData[item.itemNo] = { originalWac: item.buyPrice, currentSellPrice: item.sellPrice, promoText: document.getElementById('promoDateText').value }; });
-      updateSelectionUI(); renderTable();
+      const startIdx = (currentPage - 1) * itemsPerPage; 
+      const pageItems = filteredItems.slice(startIdx, startIdx + itemsPerPage);
+      pageItems.forEach(item => { 
+        selectedItemIds.add(item.itemNo); 
+        if (!clearanceItemsData[item.itemNo]) clearanceItemsData[item.itemNo] = { originalWac: item.buyPrice, currentSellPrice: item.sellPrice, promoText: document.getElementById('promoDateText').value }; 
+      });
+      updateSelectionUI(); 
+      renderTable();
     }
+    
     function clearAllSelections() { selectedItemIds.clear(); updateSelectionUI(); renderTable(); }
+    
     function updateSelectionUI() {
-      const count = selectedItemIds.size; document.getElementById('selectedCountHeader').innerText = count; document.getElementById('tableSelectedCount').innerText = count; document.getElementById('floatingSelectedCount').innerText = count;
-      const bar = document.getElementById('floatingActionBar'); if (count > 0) bar.classList.remove('hidden'); else bar.classList.add('hidden');
+      const count = selectedItemIds.size; 
+      document.getElementById('selectedCountHeader').innerText = count; 
+      document.getElementById('tableSelectedCount').innerText = count; 
+      document.getElementById('floatingSelectedCount').innerText = count;
+      const bar = document.getElementById('floatingActionBar'); 
+      if (count > 0) bar.classList.remove('hidden'); else bar.classList.add('hidden');
     }
+    
     function sortTable(column) {
-      if (sortColumn === column) sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'; else { sortColumn = column; sortDirection = 'desc'; }
-      filteredItems.sort((a, b) => { let valA = a[column]; let valB = b[column]; if (typeof valA === 'string') return sortDirection === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA); return sortDirection === 'asc' ? valA - valB : valB - valA; });
+      if (sortColumn === column) sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'; 
+      else { sortColumn = column; sortDirection = 'desc'; }
+      filteredItems.sort((a, b) => { 
+        let valA = a[column]; let valB = b[column]; 
+        if (typeof valA === 'string') return sortDirection === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA); 
+        return sortDirection === 'asc' ? valA - valB : valB - valA; 
+      });
       renderTable();
     }
 
     function renderTable() {
-      const tbody = document.getElementById('mainTableBody'); const mobileContainer = document.getElementById('mobileCardContainer');
-      const totalPages = Math.ceil(filteredItems.length / itemsPerPage) || 1; currentPage = Math.max(1, Math.min(currentPage, totalPages));
-      const startIdx = (currentPage - 1) * itemsPerPage; const pageItems = filteredItems.slice(startIdx, startIdx + itemsPerPage);
+      const tbody = document.getElementById('mainTableBody'); 
+      const mobileContainer = document.getElementById('mobileCardContainer');
+      const totalPages = Math.ceil(filteredItems.length / itemsPerPage) || 1; 
+      currentPage = Math.max(1, Math.min(currentPage, totalPages));
+      const startIdx = (currentPage - 1) * itemsPerPage; 
+      const pageItems = filteredItems.slice(startIdx, startIdx + itemsPerPage);
 
       if (pageItems.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="11" class="p-8 text-center text-slate-400">ไม่พบรายการข้อมูล</td></tr>`; mobileContainer.innerHTML = `<div class="p-8 text-center text-slate-400">ไม่พบรายการข้อมูล</div>`;
+        tbody.innerHTML = `<tr><td colspan="11" class="p-8 text-center text-slate-400">ไม่พบรายการข้อมูล</td></tr>`; 
+        mobileContainer.innerHTML = `<div class="p-8 text-center text-slate-400">ไม่พบรายการข้อมูล</div>`;
       } else {
         tbody.innerHTML = pageItems.map(item => {
-          const isChecked = selectedItemIds.has(item.itemNo); const pctColor = item.discountPct > 0 ? 'bg-amber-100 text-amber-800 font-bold' : 'bg-slate-100 text-slate-500';
-          return `<tr class="hover:bg-slate-50 border-b border-slate-100 ${isChecked ? 'bg-rose-50/40' : ''} transition-colors"><td class="p-3 text-center"><input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleItemSelection('${item.itemNo}')" class="rounded text-rose-600 focus:ring-rose-500 cursor-pointer w-4 h-4"></td><td class="p-3 font-mono text-slate-700 font-semibold">${item.itemNo}</td><td class="p-3 font-medium max-w-[200px] truncate" title="${item.itemDesc}">${item.itemDesc}</td><td class="p-3"><span class="px-2 py-0.5 bg-slate-100 text-indigo-700 font-semibold rounded text-[11px]">Dept ${item.deptNo}</span></td><td class="p-3 max-w-[140px] truncate text-slate-600 font-medium" title="${item.fullClass}">${item.fullClass}</td><td class="p-3">${getStatusBadge(item.agingStatus)}</td><td class="p-3 text-right font-medium">${formatNumber(item.stockQty)}</td><td class="p-3 text-right font-semibold text-rose-700">${formatCurrency(item.buyPrice)}</td><td class="p-3 text-right font-bold text-indigo-700 text-sm">${formatCurrency(item.sellPrice)}</td><td class="p-3 text-right"><span class="px-2 py-0.5 rounded text-[11px] ${pctColor}">${item.discountPct > 0 ? `-${item.discountPct}%` : '0%'}</span></td><td class="p-3 text-center"><button onclick="openModal('${item.itemNo}')" class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold rounded-lg text-[11px] transition">360°</button></td></tr>`;
+          const isChecked = selectedItemIds.has(item.itemNo); 
+          const pctColor = item.discountPct > 0 ? 'bg-amber-100 text-amber-800 font-bold' : 'bg-slate-100 text-slate-500';
+          return `
+            <tr class="hover:bg-slate-50 border-b border-slate-100 ${isChecked ? 'bg-rose-50/40' : ''} transition-colors">
+              <td class="p-3 text-center">
+                <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleItemSelection('${item.itemNo}')" class="rounded text-rose-600 focus:ring-rose-500 cursor-pointer w-4 h-4">
+              </td>
+              <td class="p-3 font-mono text-slate-700 font-semibold">${item.itemNo}</td>
+              <td class="p-3 font-medium max-w-[200px] truncate" title="${item.itemDesc}">${item.itemDesc}</td>
+              <td class="p-3"><span class="px-2 py-0.5 bg-slate-100 text-indigo-700 font-semibold rounded text-[11px]">Dept ${item.deptNo}</span></td>
+              <td class="p-3 max-w-[140px] truncate text-slate-600 font-medium" title="${item.fullClass}">${item.fullClass}</td>
+              <td class="p-3">${getStatusBadge(item.agingStatus)}</td>
+              <td class="p-3 text-right font-medium">${formatNumber(item.stockQty)}</td>
+              <td class="p-3 text-right font-semibold text-rose-700">${formatCurrency(item.buyPrice)}</td>
+              <td class="p-3 text-right font-bold text-indigo-700 text-sm">${formatCurrency(item.sellPrice)}</td>
+              <td class="p-3 text-right"><span class="px-2 py-0.5 rounded text-[11px] ${pctColor}">${item.discountPct > 0 ? `-${item.discountPct}%` : '0%'}</span></td>
+              <td class="p-3 text-center"><button onclick="openModal('${item.itemNo}')" class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold rounded-lg text-[11px] transition">360°</button></td>
+            </tr>`;
         }).join('');
+        
         mobileContainer.innerHTML = pageItems.map(item => {
           const isChecked = selectedItemIds.has(item.itemNo);
-          return `<div class="bg-white p-3 rounded-2xl border ${isChecked ? 'border-rose-400 bg-rose-50/20' : 'border-slate-200'} shadow-sm space-y-2 transition-colors"><div class="flex items-start justify-between gap-2"><div class="flex items-start gap-2"><input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleItemSelection('${item.itemNo}')" class="rounded text-rose-600 focus:ring-rose-500 cursor-pointer w-4 h-4 mt-0.5"><div><span class="font-mono text-xs font-bold text-slate-900">${item.itemNo}</span><h5 class="text-xs font-semibold text-slate-800 line-clamp-1">${item.itemDesc}</h5></div></div><div>${getStatusBadge(item.agingStatus)}</div></div><div class="flex flex-wrap items-center gap-1.5 text-[10px]"><span class="px-1.5 py-0.5 bg-indigo-50 text-indigo-700 rounded font-medium">Dept ${item.deptNo}</span><span class="px-1.5 py-0.5 bg-teal-50 text-teal-700 rounded font-medium">${item.fullClass}</span><span class="px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded">คงเหลือ: <b>${formatNumber(item.stockQty)}</b></span></div><div class="flex items-center justify-between pt-1 border-t border-slate-100 text-xs"><div><span class="text-[10px] text-slate-400 block">WAC / ราคาขาย</span><span class="line-through text-rose-600 text-[11px]">${formatCurrency(item.buyPrice)}</span><strong class="text-indigo-700 font-bold ml-1">${formatCurrency(item.sellPrice)}</strong>${item.discountPct > 0 ? `<span class="text-[10px] text-amber-700 font-bold ml-0.5">(-${item.discountPct}%)</span>` : ''}</div><button onclick="openModal('${item.itemNo}')" class="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-lg text-[11px] font-semibold">ดู 360°</button></div></div>`;
+          return `
+            <div class="bg-white p-3 rounded-2xl border ${isChecked ? 'border-rose-400 bg-rose-50/20' : 'border-slate-200'} shadow-sm space-y-2 transition-colors">
+              <div class="flex items-start justify-between gap-2">
+                <div class="flex items-start gap-2">
+                  <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleItemSelection('${item.itemNo}')" class="rounded text-rose-600 focus:ring-rose-500 cursor-pointer w-4 h-4 mt-0.5">
+                  <div>
+                    <span class="font-mono text-xs font-bold text-slate-900">${item.itemNo}</span>
+                    <h5 class="text-xs font-semibold text-slate-800 line-clamp-1">${item.itemDesc}</h5>
+                  </div>
+                </div>
+                <div>${getStatusBadge(item.agingStatus)}</div>
+              </div>
+              <div class="flex flex-wrap items-center gap-1.5 text-[10px]">
+                <span class="px-1.5 py-0.5 bg-indigo-50 text-indigo-700 rounded font-medium">Dept ${item.deptNo}</span>
+                <span class="px-1.5 py-0.5 bg-teal-50 text-teal-700 rounded font-medium">${item.fullClass}</span>
+                <span class="px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded">คงเหลือ: <b>${formatNumber(item.stockQty)}</b></span>
+              </div>
+              <div class="flex items-center justify-between pt-1 border-t border-slate-100 text-xs">
+                <div>
+                  <span class="text-[10px] text-slate-400 block">WAC / ราคาขาย</span>
+                  <span class="line-through text-rose-600 text-[11px]">${formatCurrency(item.buyPrice)}</span>
+                  <strong class="text-indigo-700 font-bold ml-1">${formatCurrency(item.sellPrice)}</strong>
+                  ${item.discountPct > 0 ? `<span class="text-[10px] text-amber-700 font-bold ml-0.5">(-${item.discountPct}%)</span>` : ''}
+                </div>
+                <button onclick="openModal('${item.itemNo}')" class="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-lg text-[11px] font-semibold">ดู 360°</button>
+              </div>
+            </div>
+          `;
         }).join('');
       }
-      document.getElementById('tableFilteredCount').innerText = formatNumber(filteredItems.length); document.getElementById('pageIndicatorText').innerText = `หน้า ${currentPage} / ${totalPages}`;
-      document.getElementById('btnPrevPage').disabled = currentPage === 1; document.getElementById('btnNextPage').disabled = currentPage === totalPages;
+      
+      document.getElementById('tableFilteredCount').innerText = formatNumber(filteredItems.length); 
+      document.getElementById('pageIndicatorText').innerText = `หน้า ${currentPage} / ${totalPages}`;
+      document.getElementById('btnPrevPage').disabled = currentPage === 1; 
+      document.getElementById('btnNextPage').disabled = currentPage === totalPages;
     }
 
-    function openClearanceModal() { if (selectedItemIds.size === 0) { alert('กรุณาเลือกสินค้าที่ต้องการทำป้ายก่อนครับ'); return; } renderClearanceCards(); document.getElementById('clearanceModal').classList.remove('hidden'); refreshIcons(); }
-    function closeClearanceModal() { document.getElementById('clearanceModal').classList.add('hidden'); }
-    function updateLabelPrices(itemNo, field, val) {
-      if (!clearanceItemsData[itemNo]) clearanceItemsData[itemNo] = {}; clearanceItemsData[itemNo][field] = Number(val);
-      const conf = clearanceItemsData[itemNo]; const diff = (conf.originalWac || 0) - (conf.currentSellPrice || 0); const pct = conf.originalWac > 0 ? Math.round((diff / conf.originalWac) * 100) : 0;
-      if (document.getElementById(`discount-val-${itemNo}`)) document.getElementById(`discount-val-${itemNo}`).innerText = diff.toFixed(2); if (document.getElementById(`print-discount-val-${itemNo}`)) document.getElementById(`print-discount-val-${itemNo}`).innerText = diff.toFixed(2);
-      if (document.getElementById(`discount-pct-${itemNo}`)) document.getElementById(`discount-pct-${itemNo}`).innerText = pct > 0 ? `${pct}%` : '0%'; if (document.getElementById(`print-discount-pct-${itemNo}`)) document.getElementById(`print-discount-pct-${itemNo}`).innerText = pct > 0 ? `${pct}%` : '0%';
-      if (document.getElementById(`print-price-${itemNo}`)) document.getElementById(`print-price-${itemNo}`).innerText = Math.round(conf.currentSellPrice || 0); if (document.getElementById(`print-orig-${itemNo}`)) document.getElementById(`print-orig-${itemNo}`).innerText = Math.round(conf.originalWac || 0);
+    function openClearanceModal() { 
+      if (selectedItemIds.size === 0) { alert('กรุณาเลือกสินค้าที่ต้องการทำป้ายก่อนครับ'); return; } 
+      renderClearanceCards(); 
+      document.getElementById('clearanceModal').classList.remove('hidden'); 
+      refreshIcons(); 
     }
-    function applyPromoDateToAll() { const text = document.getElementById('promoDateText').value; selectedItemIds.forEach(id => { if (!clearanceItemsData[id]) clearanceItemsData[id] = {}; clearanceItemsData[id].promoText = text; }); renderClearanceCards(); }
+    
+    function closeClearanceModal() { document.getElementById('clearanceModal').classList.add('hidden'); }
+    
+    function updateLabelPrices(itemNo, field, val) {
+      if (!clearanceItemsData[itemNo]) clearanceItemsData[itemNo] = {}; 
+      clearanceItemsData[itemNo][field] = Number(val);
+      const conf = clearanceItemsData[itemNo]; 
+      const diff = (conf.originalWac || 0) - (conf.currentSellPrice || 0); 
+      const pct = conf.originalWac > 0 ? Math.round((diff / conf.originalWac) * 100) : 0;
+      
+      if (document.getElementById(`discount-val-${itemNo}`)) document.getElementById(`discount-val-${itemNo}`).innerText = diff.toFixed(2); 
+      if (document.getElementById(`print-discount-val-${itemNo}`)) document.getElementById(`print-discount-val-${itemNo}`).innerText = diff.toFixed(2);
+      if (document.getElementById(`discount-pct-${itemNo}`)) document.getElementById(`discount-pct-${itemNo}`).innerText = pct > 0 ? `${pct}%` : '0%'; 
+      if (document.getElementById(`print-discount-pct-${itemNo}`)) document.getElementById(`print-discount-pct-${itemNo}`).innerText = pct > 0 ? `${pct}%` : '0%';
+      if (document.getElementById(`print-price-${itemNo}`)) document.getElementById(`print-price-${itemNo}`).innerText = Math.round(conf.currentSellPrice || 0); 
+      if (document.getElementById(`print-orig-${itemNo}`)) document.getElementById(`print-orig-${itemNo}`).innerText = Math.round(conf.originalWac || 0);
+    }
+    
+    function applyPromoDateToAll() { 
+      const text = document.getElementById('promoDateText').value; 
+      selectedItemIds.forEach(id => { 
+        if (!clearanceItemsData[id]) clearanceItemsData[id] = {}; 
+        clearanceItemsData[id].promoText = text; 
+      }); 
+      renderClearanceCards(); 
+    }
+    
     function generateSinglePremiumCard(item, isPrint = false) {
       const conf = clearanceItemsData[item.itemNo] || { originalWac: item.buyPrice, currentSellPrice: item.sellPrice, promoText: document.getElementById('promoDateText').value };
-      const diff = conf.originalWac - conf.currentSellPrice; const pct = conf.originalWac > 0 ? Math.round((diff / conf.originalWac) * 100) : 0; const promoText = conf.promoText || document.getElementById('promoDateText').value;
-      return `<div class="relative w-full h-full makro-ribbed-bg overflow-hidden flex flex-col justify-between select-none box-border p-0 border border-slate-300"><svg class="absolute inset-0 w-full h-full pointer-events-none z-0" viewBox="0 0 500 350" preserveAspectRatio="none"><path d="M 0,0 L 500,0 L 500,312 C 380,312 280,328 175,314 C 55,296 15,220 8,110 C 3,40 0,0 0,0 Z" fill="#ffffff" stroke="#c4121a" stroke-width="4.5" stroke-linejoin="round"/></svg><div class="relative z-10 px-5 pt-3.5 pb-1 flex justify-between items-start"><div class="max-w-[68%] space-y-0.5"><span class="text-xs font-bold text-slate-800 tracking-tight block font-mono">รหัส ${item.itemNo}</span><h4 class="text-sm sm:text-base font-extrabold text-slate-950 leading-tight line-clamp-1" title="${item.itemDesc}">${item.itemDesc}</h4><p class="text-[10.5px] text-slate-500 line-clamp-1 font-medium">${item.fullClass}</p></div><div class="relative flex flex-col items-center"><div class="bg-gradient-to-b from-amber-400 via-orange-500 to-red-600 text-white px-3.5 py-1 rounded-2xl shadow-lg border-2 border-white text-center transform -rotate-1"><span class="text-xs sm:text-sm font-black tracking-wider uppercase block drop-shadow font-sans text-yellow-50" style="font-style: italic;">CLEARANCE</span><span class="text-[9.5px] sm:text-[10px] font-extrabold tracking-widest uppercase block -mt-1 drop-shadow text-white">SALE</span></div></div></div><div class="relative z-10 px-6 py-0 flex items-center justify-between my-auto"><div class="space-y-1.5 pl-1"><div class="flex items-center gap-2"><div class="relative inline-block">${isPrint ? `<span id="print-orig-${item.itemNo}" class="text-2xl sm:text-3xl font-bold text-red-600 relative inline-block">${Math.round(conf.originalWac)}<span class="absolute left-[-4px] right-[-4px] top-1/2 h-[2.5px] bg-red-600 transform -rotate-12"></span></span>` : `<div class="relative flex items-center"><input type="number" value="${Math.round(conf.originalWac)}" onchange="updateLabelPrices('${item.itemNo}', 'originalWac', this.value)" class="w-16 text-center text-xl font-bold text-red-600 border border-red-200 bg-red-50/60 rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-red-500 font-sans"><span class="absolute left-[-2px] right-[-2px] top-1/2 h-[2px] bg-red-600 transform -rotate-12 pointer-events-none"></span></div>`}</div><div class="bg-gradient-to-r from-amber-400 to-yellow-400 text-red-950 px-2.5 py-0.5 rounded-lg shadow-sm border border-yellow-200 text-center transform -rotate-2"><span class="text-[10px] sm:text-[11px] font-black uppercase tracking-tight block">ลด <span id="${isPrint ? 'print-' : ''}discount-pct-${item.itemNo}" class="text-xs sm:text-sm font-black text-red-900">${pct > 0 ? `${pct}%` : '0%'}</span></span></div></div></div><div class="text-right pr-2">${isPrint ? `<span id="print-price-${item.itemNo}" class="text-6xl sm:text-7xl font-black text-black tracking-tighter leading-none" style="font-family: 'Oswald', 'Prompt', sans-serif;">${Math.round(conf.currentSellPrice)}</span>` : `<div class="flex items-center gap-1 justify-end"><input type="number" value="${Math.round(conf.currentSellPrice)}" onchange="updateLabelPrices('${item.itemNo}', 'currentSellPrice', this.value)" class="w-28 text-right text-4xl sm:text-5xl font-black text-black border border-slate-300 bg-white rounded-lg px-2 py-0.5 focus:ring-2 focus:ring-red-500 font-sans"></div>`}</div></div><div class="relative z-10 px-5 pb-2.5 flex justify-between items-end"><div class="pl-1 pb-0.5"><span class="text-white font-black text-xl sm:text-2xl tracking-tighter lowercase font-sans drop-shadow-md select-none">makro</span></div><div class="text-right space-y-0.5"><p class="text-xs sm:text-sm font-bold text-slate-900 leading-none">ถูกลง <span id="${isPrint ? 'print-' : ''}discount-val-${item.itemNo}" class="text-sm sm:text-base font-black text-slate-950 font-mono">${diff.toFixed(2)}</span></p><p class="text-[9.5px] sm:text-[10.5px] font-medium text-slate-700 leading-tight">${promoText}</p></div></div></div>`;
+      const diff = conf.originalWac - conf.currentSellPrice; 
+      const pct = conf.originalWac > 0 ? Math.round((diff / conf.originalWac) * 100) : 0; 
+      const promoText = conf.promoText || document.getElementById('promoDateText').value;
+      
+      return `
+        <div class="relative w-full h-full makro-ribbed-bg overflow-hidden flex flex-col justify-between select-none box-border p-0 border border-slate-300">
+          <svg class="absolute inset-0 w-full h-full pointer-events-none z-0" viewBox="0 0 500 350" preserveAspectRatio="none">
+            <path d="M 0,0 L 500,0 L 500,312 C 380,312 280,328 175,314 C 55,296 15,220 8,110 C 3,40 0,0 0,0 Z" fill="#ffffff" stroke="#c4121a" stroke-width="4.5" stroke-linejoin="round"/>
+          </svg>
+          <div class="relative z-10 px-5 pt-3.5 pb-1 flex justify-between items-start">
+            <div class="max-w-[68%] space-y-0.5">
+              <span class="text-xs font-bold text-slate-800 tracking-tight block font-mono">รหัส ${item.itemNo}</span>
+              <h4 class="text-sm sm:text-base font-extrabold text-slate-950 leading-tight line-clamp-1" title="${item.itemDesc}">${item.itemDesc}</h4>
+              <p class="text-[10.5px] text-slate-500 line-clamp-1 font-medium">${item.fullClass}</p>
+            </div>
+            <div class="relative flex flex-col items-center">
+              <div class="bg-gradient-to-b from-amber-400 via-orange-500 to-red-600 text-white px-3.5 py-1 rounded-2xl shadow-lg border-2 border-white text-center transform -rotate-1">
+                <span class="text-xs sm:text-sm font-black tracking-wider uppercase block drop-shadow font-sans text-yellow-50" style="font-style: italic;">CLEARANCE</span>
+                <span class="text-[9.5px] sm:text-[10px] font-extrabold tracking-widest uppercase block -mt-1 drop-shadow text-white">SALE</span>
+              </div>
+            </div>
+          </div>
+          <div class="relative z-10 px-6 py-0 flex items-center justify-between my-auto">
+            <div class="space-y-1.5 pl-1">
+              <div class="flex items-center gap-2">
+                <div class="relative inline-block">
+                  ${isPrint ? `
+                    <span id="print-orig-${item.itemNo}" class="text-2xl sm:text-3xl font-bold text-red-600 relative inline-block">
+                      ${Math.round(conf.originalWac)}
+                      <span class="absolute left-[-4px] right-[-4px] top-1/2 h-[2.5px] bg-red-600 transform -rotate-12"></span>
+                    </span>
+                  ` : `
+                    <div class="relative flex items-center">
+                      <input type="number" value="${Math.round(conf.originalWac)}" onchange="updateLabelPrices('${item.itemNo}', 'originalWac', this.value)" class="w-16 text-center text-xl font-bold text-red-600 border border-red-200 bg-red-50/60 rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-red-500 font-sans">
+                      <span class="absolute left-[-2px] right-[-2px] top-1/2 h-[2px] bg-red-600 transform -rotate-12 pointer-events-none"></span>
+                    </div>
+                  `}
+                </div>
+                <div class="bg-gradient-to-r from-amber-400 to-yellow-400 text-red-950 px-2.5 py-0.5 rounded-lg shadow-sm border border-yellow-200 text-center transform -rotate-2">
+                  <span class="text-[10px] sm:text-[11px] font-black uppercase tracking-tight block">ลด <span id="${isPrint ? 'print-' : ''}discount-pct-${item.itemNo}" class="text-xs sm:text-sm font-black text-red-900">${pct > 0 ? `${pct}%` : '0%'}</span></span>
+                </div>
+              </div>
+            </div>
+            <div class="text-right pr-2">
+              ${isPrint ? `
+                <span id="print-price-${item.itemNo}" class="text-6xl sm:text-7xl font-black text-black tracking-tighter leading-none" style="font-family: 'Oswald', 'Prompt', sans-serif;">${Math.round(conf.currentSellPrice)}</span>
+              ` : `
+                <div class="flex items-center gap-1 justify-end">
+                  <input type="number" value="${Math.round(conf.currentSellPrice)}" onchange="updateLabelPrices('${item.itemNo}', 'currentSellPrice', this.value)" class="w-28 text-right text-4xl sm:text-5xl font-black text-black border border-slate-300 bg-white rounded-lg px-2 py-0.5 focus:ring-2 focus:ring-red-500 font-sans">
+                </div>
+              `}
+            </div>
+          </div>
+          <div class="relative z-10 px-5 pb-2.5 flex justify-between items-end">
+            <div class="pl-1 pb-0.5"><span class="text-white font-black text-xl sm:text-2xl tracking-tighter lowercase font-sans drop-shadow-md select-none">makro</span></div>
+            <div class="text-right space-y-0.5">
+              <p class="text-xs sm:text-sm font-bold text-slate-900 leading-none">ถูกลง <span id="${isPrint ? 'print-' : ''}discount-val-${item.itemNo}" class="text-sm sm:text-base font-black text-slate-950 font-mono">${diff.toFixed(2)}</span></p>
+              <p class="text-[9.5px] sm:text-[10.5px] font-medium text-slate-700 leading-tight">${promoText}</p>
+            </div>
+          </div>
+        </div>`;
     }
+    
     function renderClearanceCards() {
-      const previewContainer = document.getElementById('previewContainer'); const printContainer = document.getElementById('printContainer');
+      const previewContainer = document.getElementById('previewContainer'); 
+      const printContainer = document.getElementById('printContainer');
       const items = Array.from(selectedItemIds).map(id => rawItems.find(r => r.itemNo === id)).filter(Boolean);
       const totalCards = items.length; const totalSheets = Math.ceil(totalCards / 4) || 1;
-      document.getElementById('clearanceTotalTags').innerText = totalCards; document.getElementById('clearanceTotalSheets').innerText = totalSheets;
+      
+      document.getElementById('clearanceTotalTags').innerText = totalCards; 
+      document.getElementById('clearanceTotalSheets').innerText = totalSheets;
+      
       let previewHTML = ''; let printHTML = '';
       for (let i = 0; i < items.length; i += 4) {
         const sheetItems = items.slice(i, i + 4); const sheetNo = Math.floor(i / 4) + 1;
-        previewHTML += `<div class="bg-white p-3 sm:p-4 rounded-3xl shadow-xl border border-slate-300 space-y-2 max-w-4xl mx-auto"><div class="flex justify-between items-center text-xs text-slate-500 pb-1.5 border-b border-slate-100"><span class="font-bold text-slate-800 text-xs sm:text-sm">แผ่นที่ ${sheetNo} / ${totalSheets} (A4 แนวนอน)</span><span class="text-[11px] text-slate-400">แก้ไขตัวเลขราคาเพื่อดู % ได้ทันที</span></div><div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 bg-slate-100 p-2.5 rounded-2xl border border-slate-300">${sheetItems.map(item => `<div class="rounded-2xl overflow-hidden shadow-md" style="aspect-ratio: 1.414 / 1; min-height: 235px;">${generateSinglePremiumCard(item, false)}</div>`).join('')}${sheetItems.length < 4 ? Array(4 - sheetItems.length).fill(0).map(() => `<div class="border-2 border-dashed border-slate-300 bg-white/40 rounded-2xl flex items-center justify-center text-slate-400 text-xs font-medium" style="aspect-ratio: 1.414 / 1;">ช่องว่างสำหรับตัด</div>`).join('') : ''}</div></div>`;
-        printHTML += `<div class="a4-print-sheet">${sheetItems.map(item => `<div class="print-tag-cell">${generateSinglePremiumCard(item, true)}</div>`).join('')}${sheetItems.length < 4 ? Array(4 - sheetItems.length).fill(0).map(() => `<div class="print-tag-cell border border-dashed border-slate-200"></div>`).join('') : ''}</div>`;
+        previewHTML += `
+          <div class="bg-white p-3 sm:p-4 rounded-3xl shadow-xl border border-slate-300 space-y-2 max-w-4xl mx-auto">
+            <div class="flex justify-between items-center text-xs text-slate-500 pb-1.5 border-b border-slate-100">
+              <span class="font-bold text-slate-800 text-xs sm:text-sm">แผ่นที่ ${sheetNo} / ${totalSheets} (A4 แนวนอน)</span>
+              <span class="text-[11px] text-slate-400">แก้ไขตัวเลขราคาเพื่อดู % ได้ทันที</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 bg-slate-100 p-2.5 rounded-2xl border border-slate-300">
+              ${sheetItems.map(item => `<div class="rounded-2xl overflow-hidden shadow-md" style="aspect-ratio: 1.414 / 1; min-height: 235px;">${generateSinglePremiumCard(item, false)}</div>`).join('')}
+              ${sheetItems.length < 4 ? Array(4 - sheetItems.length).fill(0).map(() => `<div class="border-2 border-dashed border-slate-300 bg-white/40 rounded-2xl flex items-center justify-center text-slate-400 text-xs font-medium" style="aspect-ratio: 1.414 / 1;">ช่องว่างสำหรับตัด</div>`).join('') : ''}
+            </div>
+          </div>
+        `;
+        printHTML += `
+          <div class="a4-print-sheet">
+            ${sheetItems.map(item => `<div class="print-tag-cell">${generateSinglePremiumCard(item, true)}</div>`).join('')}
+            ${sheetItems.length < 4 ? Array(4 - sheetItems.length).fill(0).map(() => `<div class="print-tag-cell border border-dashed border-slate-200"></div>`).join('') : ''}
+          </div>
+        `;
       }
-      previewContainer.innerHTML = previewHTML; printContainer.innerHTML = printHTML;
+      previewContainer.innerHTML = previewHTML; 
+      printContainer.innerHTML = printHTML;
     }
 
     function openModal(itemNo) {
       const item = rawItems.find(r => r.itemNo === itemNo); if (!item) return;
       const statusInfo = AGING_STATUS_MAP[item.agingStatus] || { label: item.agingStatus, color: 'bg-slate-100 text-slate-700' };
-      document.getElementById('modalDeptBadge').innerText = `Dept ${item.deptNo}`; document.getElementById('modalClassBadge').innerText = item.fullClass; document.getElementById('modalItemNo').innerText = `SKU: ${item.itemNo}`;
-      const modalBadge = document.getElementById('modalStatusBadge'); modalBadge.innerText = statusInfo.label; modalBadge.className = `px-2 py-0.5 rounded-md text-[10px] font-semibold border ${statusInfo.color}`;
-      document.getElementById('modalItemDesc').innerText = item.itemDesc; document.getElementById('modalSupplier').innerText = item.supplier; document.getElementById('modalBuyer').innerText = item.buyer; document.getElementById('modalBrand').innerText = item.ownBrand; document.getElementById('modalUom').innerText = item.uom;
-      document.getElementById('modalStockQty').innerText = formatNumber(item.stockQty); document.getElementById('modalWac').innerText = formatCurrency(item.buyPrice); document.getElementById('modalSelling').innerText = formatCurrency(item.sellPrice); document.getElementById('modalGrandTotal').innerText = formatCurrency(item.grandTotal);
-      document.getElementById('modalLastDelivery').innerText = item.lastDelivery; document.getElementById('modalLastSold').innerText = item.lastSold; document.getElementById('modalAgingDays').innerText = `${item.agingDays} วัน`; document.getElementById('modalNbsDays').innerText = `${item.nbsDays} วัน`;
-      document.getElementById('modalAgingProv').innerText = formatCurrency(item.agingProvision); document.getElementById('modalNbsProv').innerText = formatCurrency(item.nbsProvision); document.getElementById('modalTotalProv').innerText = formatCurrency(item.totalProvision);
-      document.getElementById('itemDetailModal').classList.remove('hidden'); refreshIcons();
+      document.getElementById('modalDeptBadge').innerText = `Dept ${item.deptNo}`; 
+      document.getElementById('modalClassBadge').innerText = item.fullClass; 
+      document.getElementById('modalItemNo').innerText = `SKU: ${item.itemNo}`;
+      const modalBadge = document.getElementById('modalStatusBadge'); 
+      modalBadge.innerText = statusInfo.label; 
+      modalBadge.className = `px-2 py-0.5 rounded-md text-[10px] font-semibold border ${statusInfo.color}`;
+      
+      document.getElementById('modalItemDesc').innerText = item.itemDesc; 
+      document.getElementById('modalSupplier').innerText = item.supplier; 
+      document.getElementById('modalBuyer').innerText = item.buyer; 
+      document.getElementById('modalBrand').innerText = item.ownBrand; 
+      document.getElementById('modalUom').innerText = item.uom;
+      document.getElementById('modalStockQty').innerText = formatNumber(item.stockQty); 
+      document.getElementById('modalWac').innerText = formatCurrency(item.buyPrice); 
+      document.getElementById('modalSelling').innerText = formatCurrency(item.sellPrice); 
+      document.getElementById('modalGrandTotal').innerText = formatCurrency(item.grandTotal);
+      document.getElementById('modalLastDelivery').innerText = item.lastDelivery; 
+      document.getElementById('modalLastSold').innerText = item.lastSold; 
+      document.getElementById('modalAgingDays').innerText = `${item.agingDays} วัน`; 
+      document.getElementById('modalNbsDays').innerText = `${item.nbsDays} วัน`;
+      document.getElementById('modalAgingProv').innerText = formatCurrency(item.agingProvision); 
+      document.getElementById('modalNbsProv').innerText = formatCurrency(item.nbsProvision); 
+      document.getElementById('modalTotalProv').innerText = formatCurrency(item.totalProvision);
+      document.getElementById('itemDetailModal').classList.remove('hidden'); 
+      refreshIcons();
     }
+    
     function closeModal() { document.getElementById('itemDetailModal').classList.add('hidden'); }
 
-    // ==========================================
-    // BULLETPROOF GOOGLE SHEETS LOADER
-    // ==========================================
+    // Loader
     async function loadFixedGoogleSheet(urlOverride = null) {
       if (urlOverride) {
-          currentSheetUrl = urlOverride;
-          localStorage.setItem('makro_custom_sheet_url', currentSheetUrl);
+        currentSheetUrl = urlOverride;
+        localStorage.setItem('makro_custom_sheet_url', currentSheetUrl);
       }
 
       showLoading(true, 'กำลังเชื่อมต่อ Google Sheets...', 'ระบบกำลังดึงข้อมูลล่าสุดจากสต็อก');
@@ -667,7 +1073,9 @@
           if (response.ok) {
             const text = await response.text();
             if (text && !text.includes('<!DOCTYPE html>') && !text.includes('accounts.google.com') && !text.includes('Sign in')) {
-              csvText = text; fetchSuccess = true; break;
+              csvText = text; 
+              fetchSuccess = true; 
+              break;
             }
           }
         } catch (e) { console.warn('Endpoint retry...', e); }
@@ -712,36 +1120,76 @@
     }
 
     function processExcelFile(file) {
-      if (!file) return; showLoading(true, 'กำลังอ่านไฟล์ Excel...', '');
+      if (!file) return; 
+      showLoading(true, 'กำลังอ่านไฟล์ Excel...', '');
       const reader = new FileReader();
       reader.onload = function(evt) {
         try {
-          const data = new Uint8Array(evt.target.result); const workbook = XLSX.read(data, { type: 'array', dense: true });
+          const data = new Uint8Array(evt.target.result); 
+          const workbook = XLSX.read(data, { type: 'array', dense: true });
           const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
           if (!json || json.length === 0) throw new Error('ไม่พบข้อมูล');
-          rawItems = json.filter(row => !isSummaryRow(row)).map(cleanRow); filteredItems = [...rawItems];
-          document.getElementById('dropZoneContainer').classList.add('hidden'); document.getElementById('dashboardContent').classList.remove('hidden');
-          populateDropdowns(rawItems); updateUI(); showLoading(false);
+          rawItems = json.filter(row => !isSummaryRow(row)).map(cleanRow); 
+          filteredItems = [...rawItems];
+          document.getElementById('dropZoneContainer').classList.add('hidden'); 
+          document.getElementById('dashboardContent').classList.remove('hidden');
+          populateDropdowns(rawItems); 
+          updateUI(); 
+          showLoading(false);
         } catch (err) { showLoading(false); alert('Error: ' + err.message); }
-      }; reader.readAsArrayBuffer(file);
+      }; 
+      reader.readAsArrayBuffer(file);
     }
+    
     document.getElementById('fileInput').addEventListener('change', function(e) { processExcelFile(e.target.files[0]); e.target.value = ''; });
-
+    
+    // Bind Search Input (Both on input & on keyup)
     document.getElementById('globalSearch').addEventListener('input', applyFilters);
-    document.getElementById('filterDept').addEventListener('change', (e) => { updateClassDropdown(rawItems, e.target.value); applyFilters(); });
-    document.getElementById('filterClass').addEventListener('change', applyFilters); document.getElementById('filterAgingStatus').addEventListener('change', applyFilters); document.getElementById('filterRisk').addEventListener('change', applyFilters);
-    document.getElementById('captureBtn').addEventListener('click', () => {
-      const target = document.getElementById('captureArea'); const btn = document.getElementById('captureBtn'); const orig = btn.innerHTML;
-      btn.innerHTML = `<i data-lucide="loader" class="w-3.5 h-3.5 animate-spin"></i><span>แคป...</span>`; refreshIcons();
-      html2canvas(target, { scale: 2, useCORS: true, backgroundColor: '#f8fafc' }).then(canvas => { const link = document.createElement('a'); link.download = `Dashboard.png`; link.href = canvas.toDataURL('image/png'); link.click(); btn.innerHTML = orig; refreshIcons(); });
+    document.getElementById('globalSearch').addEventListener('keyup', applyFilters);
+    
+    document.getElementById('filterDept').addEventListener('change', (e) => { 
+      updateClassDropdown(rawItems, e.target.value); 
+      applyFilters(); 
     });
+    document.getElementById('filterClass').addEventListener('change', applyFilters); 
+    document.getElementById('filterAgingStatus').addEventListener('change', applyFilters); 
+    document.getElementById('filterRisk').addEventListener('change', applyFilters);
+    
+    document.getElementById('captureBtn').addEventListener('click', () => {
+      const target = document.getElementById('captureArea'); 
+      const btn = document.getElementById('captureBtn'); 
+      const orig = btn.innerHTML;
+      btn.innerHTML = `<i data-lucide="loader" class="w-3.5 h-3.5 animate-spin"></i><span>แคป...</span>`; 
+      refreshIcons();
+      html2canvas(target, { scale: 2, useCORS: true, backgroundColor: '#f8fafc' }).then(canvas => { 
+        const link = document.createElement('a'); 
+        link.download = `Dashboard_${new Date().toISOString().slice(0,10)}.png`; 
+        link.href = canvas.toDataURL('image/png'); 
+        link.click(); 
+        btn.innerHTML = orig; 
+        refreshIcons(); 
+      });
+    });
+    
     document.getElementById('openClearanceBtn').addEventListener('click', openClearanceModal);
-    document.getElementById('resetFilters').addEventListener('click', () => { document.getElementById('globalSearch').value = ''; document.getElementById('filterDept').value = ''; updateClassDropdown(rawItems, ''); document.getElementById('filterClass').value = ''; document.getElementById('filterAgingStatus').value = ''; document.getElementById('filterRisk').value = ''; applyFilters(); });
-    document.getElementById('btnPrevPage').addEventListener('click', () => { if (currentPage > 1) { currentPage--; renderTable(); } }); document.getElementById('btnNextPage').addEventListener('click', () => { currentPage++; renderTable(); });
+    
+    document.getElementById('resetFilters').addEventListener('click', () => { 
+      document.getElementById('globalSearch').value = ''; 
+      document.getElementById('filterDept').value = ''; 
+      updateClassDropdown(rawItems, ''); 
+      document.getElementById('filterClass').value = ''; 
+      document.getElementById('filterAgingStatus').value = ''; 
+      document.getElementById('filterRisk').value = ''; 
+      applyFilters(); 
+    });
+    
+    document.getElementById('btnPrevPage').addEventListener('click', () => { if (currentPage > 1) { currentPage--; renderTable(); } }); 
+    document.getElementById('btnNextPage').addEventListener('click', () => { currentPage++; renderTable(); });
 
-    window.addEventListener('DOMContentLoaded', () => { refreshIcons(); loadFixedGoogleSheet(); });
+    window.addEventListener('DOMContentLoaded', () => { 
+      refreshIcons(); 
+      loadFixedGoogleSheet(); 
+    });
   </script>
-</body>
-</html>
 </body>
 </html>
