@@ -4,10 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Enterprise Aging & NBS Analytics with Premium Makro Clearance Label Maker</title>
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- SheetJS (Excel Parser) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <!-- html2canvas (Capture Dashboard) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- Lucide Icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
   <link href="https://fonts.googleapis.com/css2?family=Prompt:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,800&family=Oswald:wght@600;700;800;900&display=swap" rel="stylesheet">
   <style>
@@ -16,14 +21,60 @@
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
     .tab-btn.active { border-bottom: 2px solid #4f46e5; color: #4f46e5; font-weight: 600; }
     .mobile-nav-btn.active { color: #6366f1; }
-    .makro-ribbed-bg { background-color: #b3000b; background-image: repeating-linear-gradient(90deg, #d1000f 0px, #d1000f 3.5px, #b3000b 3.5px, #b3000b 9.5px, #7d0006 9.5px, #7d0006 13px); }
+
+    /* CSS Texture ลอนคอนเทนเนอร์สีแดง Makro มิติสมจริง */
+    .makro-ribbed-bg {
+      background-color: #b3000b;
+      background-image: repeating-linear-gradient(
+        90deg,
+        #d1000f 0px,
+        #d1000f 3.5px,
+        #b3000b 3.5px,
+        #b3000b 9.5px,
+        #7d0006 9.5px,
+        #7d0006 13px
+      );
+    }
+
+    /* Print Styles for Perfect A4 Landscape (4-Up Grid) */
     @media print {
-      @page { size: A4 landscape; margin: 0; }
-      body * { visibility: hidden !important; }
-      #printContainer, #printContainer * { visibility: visible !important; }
-      #printContainer { position: absolute; left: 0; top: 0; width: 297mm; margin: 0; padding: 0; background: white; display: block !important; }
-      .a4-print-sheet { width: 297mm; height: 210mm; page-break-after: always; page-break-inside: avoid; display: grid !important; grid-template-columns: 148.5mm 148.5mm; grid-template-rows: 105mm 105mm; margin: 0; padding: 0; box-sizing: border-box; }
-      .print-tag-cell { width: 148.5mm; height: 105mm; box-sizing: border-box; }
+      @page {
+        size: A4 landscape;
+        margin: 0;
+      }
+      body * {
+        visibility: hidden !important;
+      }
+      #printContainer, #printContainer * {
+        visibility: visible !important;
+      }
+      #printContainer {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 297mm;
+        margin: 0;
+        padding: 0;
+        background: white;
+        display: block !important;
+      }
+      .a4-print-sheet {
+        width: 297mm;
+        height: 210mm;
+        page-break-after: always;
+        page-break-inside: avoid;
+        display: grid !important;
+        grid-template-columns: 148.5mm 148.5mm;
+        grid-template-rows: 105mm 105mm;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      .print-tag-cell {
+        width: 148.5mm;
+        height: 105mm;
+        box-sizing: border-box;
+      }
     }
   </style>
 </head>
@@ -38,31 +89,44 @@
     </div>
   </div>
 
+  <!-- Header Bar -->
   <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-30">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between items-center py-3 gap-2">
         <div class="flex items-center space-x-2.5">
-          <div class="p-2 bg-indigo-600 rounded-xl shadow-inner"><i data-lucide="layers" class="w-5 h-5 text-white"></i></div>
+          <div class="p-2 bg-indigo-600 rounded-xl shadow-inner">
+            <i data-lucide="layers" class="w-5 h-5 text-white"></i>
+          </div>
           <div>
-            <div class="flex items-center gap-1.5"><h1 class="text-sm sm:text-base font-bold tracking-tight">Aging & NBS Analytics</h1><span class="px-1.5 py-0.5 text-[9px] font-semibold bg-rose-500/20 text-rose-300 border border-rose-400/30 rounded-full">Pro</span></div>
+            <div class="flex items-center gap-1.5">
+              <h1 class="text-sm sm:text-base font-bold tracking-tight">Aging & NBS Analytics</h1>
+              <span class="px-1.5 py-0.5 text-[9px] font-semibold bg-rose-500/20 text-rose-300 border border-rose-400/30 rounded-full">Pro</span>
+            </div>
             <p class="text-[10px] text-slate-400 hidden sm:block">ระบบบริหารสต็อกและจัดพิมพ์ป้าย Clearance Sale</p>
           </div>
         </div>
+        
         <div class="flex items-center gap-1.5 sm:gap-2">
           <button onclick="loadFixedGoogleSheet()" title="รีเฟรชข้อมูลสต็อก" class="flex items-center gap-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl transition shadow-sm">
-            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i><span class="hidden sm:inline">รีเฟรช</span>
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+            <span class="hidden sm:inline">รีเฟรช</span>
           </button>
           <button id="openClearanceBtn" class="flex items-center gap-1 bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl transition shadow-sm">
-            <i data-lucide="tags" class="w-3.5 h-3.5"></i><span>ป้าย (<span id="selectedCountHeader">0</span>)</span>
+            <i data-lucide="tags" class="w-3.5 h-3.5"></i>
+            <span>ป้าย (<span id="selectedCountHeader">0</span>)</span>
           </button>
           <button id="captureBtn" class="hidden sm:flex items-center gap-1 bg-cyan-700 hover:bg-cyan-600 text-white text-xs font-medium px-3 py-2 rounded-xl transition shadow-sm">
-            <i data-lucide="camera" class="w-3.5 h-3.5"></i><span>แคปรูป</span>
+            <i data-lucide="camera" class="w-3.5 h-3.5"></i>
+            <span>แคปรูป</span>
           </button>
           <button id="exportCsvBtn" class="hidden sm:flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium px-3 py-2 rounded-xl transition">
-            <i data-lucide="download" class="w-3.5 h-3.5 text-slate-400"></i><span>Excel</span>
+            <i data-lucide="download" class="w-3.5 h-3.5 text-slate-400"></i>
+            <span>Excel</span>
           </button>
         </div>
       </div>
+
+      <!-- Desktop Navigation Tabs -->
       <nav id="navTabs" class="hidden md:flex space-x-8 text-sm overflow-x-auto custom-scrollbar border-t border-slate-800 mt-1">
         <button onclick="switchTab('overview')" id="tab-overview" class="tab-btn active py-3 px-1 text-slate-300 hover:text-white flex items-center gap-2 whitespace-nowrap"><i data-lucide="layout-dashboard" class="w-4 h-4"></i> ภาพรวมบริหาร</button>
         <button onclick="switchTab('aging')" id="tab-aging" class="tab-btn py-3 px-1 text-slate-400 hover:text-white flex items-center gap-2 whitespace-nowrap"><i data-lucide="clock-alert" class="w-4 h-4"></i> วิเคราะห์ Aging</button>
@@ -73,6 +137,7 @@
     </div>
   </header>
 
+  <!-- Mobile Bottom Navigation Bar -->
   <div class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 z-40 flex justify-around items-center py-2 text-[10px] text-slate-400 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
     <button onclick="switchTab('overview')" id="mob-tab-overview" class="mobile-nav-btn active flex flex-col items-center gap-0.5"><i data-lucide="layout-dashboard" class="w-4 h-4"></i> ภาพรวม</button>
     <button onclick="switchTab('aging')" id="mob-tab-aging" class="mobile-nav-btn flex flex-col items-center gap-0.5"><i data-lucide="clock-alert" class="w-4 h-4"></i> Aging</button>
@@ -81,7 +146,7 @@
     <button onclick="switchTab('explorer')" id="mob-tab-explorer" class="mobile-nav-btn flex flex-col items-center gap-0.5"><i data-lucide="list" class="w-4 h-4"></i> สินค้า</button>
   </div>
 
-  <!-- Fallback/Upload Screen (Now fully customized for Corporate Fix) -->
+  <!-- Fallback/Upload Screen -->
   <div id="dropZoneContainer" class="max-w-4xl mx-auto px-4 py-8 flex-1 flex flex-col justify-center items-center hidden">
     <div class="w-full bg-rose-50 border border-rose-200 rounded-3xl p-6 md:p-8 text-center shadow-md flex flex-col items-center">
       <div class="p-4 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mb-4">
@@ -89,8 +154,8 @@
       </div>
       <h3 class="text-base font-bold text-rose-900">ติดข้อจำกัดความปลอดภัย (CORS) ของอีเมลองค์กร</h3>
       <p class="text-xs text-rose-700 mt-2 max-w-lg">
-        หากใช้ระบบ Google Workspace ของบริษัท การตั้งแชร์เฉยๆ จะถูกบล็อกครับ<br>
-        <b>วิธีแก้:</b> ใน Google Sheet ไปที่ <b>ไฟล์ > แชร์ > เผยแพร่ไปยังเว็บ (Publish to web)</b> <br>
+        หากใช้ระบบ Google Workspace ของบริษัท ให้ไปที่ Google Sheet เมนู: <br>
+        <b>ไฟล์ &gt; แชร์ &gt; เผยแพร่ไปยังเว็บ (Publish to web)</b> <br>
         ➔ เลือก <b>"ค่าที่คั่นด้วยจุลภาค (.csv)"</b> ➔ กดเผยแพร่ แล้วก๊อปลิงก์มาวางด้านล่างครับ
       </p>
       
@@ -129,7 +194,7 @@
           <div><select id="filterDept" class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-xl px-2.5 py-1.5 focus:ring-2 focus:ring-indigo-500"><option value="">ทุกรหัสแผนก (Dept No)</option></select></div>
           <div><select id="filterClass" class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-xl px-2.5 py-1.5 focus:ring-2 focus:ring-indigo-500 max-w-[200px] truncate"><option value="">ทุกหมวด (Class No - Desc)</option></select></div>
           <div><select id="filterAgingStatus" class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-xl px-2.5 py-1.5 focus:ring-2 focus:ring-indigo-500 font-medium"><option value="">ทุกสถานะ Aging</option></select></div>
-          <div><select id="filterRisk" class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-xl px-2.5 py-1.5 focus:ring-2 focus:ring-indigo-500"><option value="">ระดับความเสี่ยงทั้งหมด</option><option value="provision">มีสำรอง (> 0)</option><option value="nbs90">ไม่ขาย > 90 วัน</option><option value="ownBrand">เฉพาะ Own Brand (Y)</option></select></div>
+          <div><select id="filterRisk" class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-xl px-2.5 py-1.5 focus:ring-2 focus:ring-indigo-500"><option value="">ระดับความเสี่ยงทั้งหมด</option><option value="provision">มีสำรอง (&gt; 0)</option><option value="nbs90">ไม่ขาย &gt; 90 วัน</option><option value="ownBrand">เฉพาะ Own Brand (Y)</option></select></div>
           <div class="col-span-2 sm:col-span-1"><button id="resetFilters" class="w-full py-1.5 px-3 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition flex items-center justify-center gap-1.5"><i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> ล้างตัวกรอง</button></div>
         </div>
       </div>
@@ -195,7 +260,7 @@
               <div class="w-full h-56 sm:h-64 relative flex items-center justify-center"><canvas id="overviewPieChart"></canvas></div>
             </div>
             <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-sm lg:col-span-2 flex flex-col">
-              <div class="w-full flex justify-between items-center mb-2"><h4 class="text-xs font-bold text-slate-700 uppercase flex items-center gap-1.5"><i data-lucide="bar-chart-3" class="w-3.5 h-3.5 text-indigo-500"></i> สต็อก & สำรองแยกราย Dept</h4></div>
+              <div class="w-full flex justify-between items-center mb-2"><h4 class="text-xs font-bold text-slate-700 uppercase flex items-center gap-1.5"><i data-lucide="bar-chart-3" class="w-3.5 h-3.5 text-indigo-500"></i> สต็อก &amp; สำรองแยกราย Dept</h4></div>
               <div class="w-full h-56 sm:h-64 relative"><canvas id="overviewDeptBarChart"></canvas></div>
             </div>
           </div>
@@ -219,8 +284,8 @@
         <!-- TAB 3: NON-MOVING STOCK (NBS) -->
         <div id="view-nbs" class="tab-view hidden space-y-4 sm:space-y-6">
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between"><div><span class="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase">ไม่ขาย > 60 วัน</span><h3 id="nbsVal60" class="text-lg sm:text-2xl font-bold text-amber-600 mt-0.5">฿0</h3></div><div class="p-2.5 bg-amber-50 text-amber-600 rounded-2xl"><i data-lucide="calendar-clock" class="w-5 h-5"></i></div></div>
-            <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between"><div><span class="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase">ไม่ขาย > 90 วัน</span><h3 id="nbsVal90" class="text-lg sm:text-2xl font-bold text-rose-600 mt-0.5">฿0</h3></div><div class="p-2.5 bg-rose-50 text-rose-600 rounded-2xl"><i data-lucide="timer-off" class="w-5 h-5"></i></div></div>
+            <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between"><div><span class="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase">ไม่ขาย &gt; 60 วัน</span><h3 id="nbsVal60" class="text-lg sm:text-2xl font-bold text-amber-600 mt-0.5">฿0</h3></div><div class="p-2.5 bg-amber-50 text-amber-600 rounded-2xl"><i data-lucide="calendar-clock" class="w-5 h-5"></i></div></div>
+            <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between"><div><span class="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase">ไม่ขาย &gt; 90 วัน</span><h3 id="nbsVal90" class="text-lg sm:text-2xl font-bold text-rose-600 mt-0.5">฿0</h3></div><div class="p-2.5 bg-rose-50 text-rose-600 rounded-2xl"><i data-lucide="timer-off" class="w-5 h-5"></i></div></div>
             <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between"><div><span class="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase">ค้างเกิน 180 วัน</span><h3 id="nbsVal180" class="text-lg sm:text-2xl font-bold text-purple-600 mt-0.5">฿0</h3></div><div class="p-2.5 bg-purple-50 text-purple-600 rounded-2xl"><i data-lucide="archive" class="w-5 h-5"></i></div></div>
           </div>
           <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-sm"><h4 class="text-xs font-bold text-slate-700 uppercase mb-2">สรุปการตั้งสำรอง NBS</h4><div class="w-full h-64 sm:h-72 relative"><canvas id="nbsProvisionChart"></canvas></div></div>
@@ -469,6 +534,15 @@
       }
     }
 
+    // ✨ Central update UI function
+    function updateUI() {
+      updateKPIs();
+      renderVisibleTabCharts();
+      renderTable();
+      updateSelectionUI();
+      refreshIcons();
+    }
+
     function toggleItemSelection(itemNo) {
       if (selectedItemIds.has(itemNo)) selectedItemIds.delete(itemNo);
       else {
@@ -570,14 +644,12 @@
       let targetUrls = [];
       const trimmedUrl = currentSheetUrl.trim();
 
-      // ถ้ารูปแบบเป็น Publish to web (CSV) แท้ๆ -> ไม่ติด CORS ชัวร์
       if (trimmedUrl.includes('pub?output=csv') || trimmedUrl.includes('/e/2PACX-')) {
         targetUrls = [
           trimmedUrl,
           `https://api.allorigins.win/raw?url=${encodeURIComponent(trimmedUrl)}`
         ];
       } else {
-        // ถ้ารูปแบบเป็น Sheet ID ธรรมดา -> เสี่ยงติดบล็อกองค์กร
         const sheetId = trimmedUrl.match(/[-\w]{25,}/) ? trimmedUrl.match(/[-\w]{25,}/)[0] : trimmedUrl;
         targetUrls = [
           `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv`,
@@ -594,7 +666,6 @@
           const response = await fetch(url);
           if (response.ok) {
             const text = await response.text();
-            // เช็คว่าต้องไม่ใช่หน้า Login ของ Google (ถ้าเป็นหน้า Login แปลว่าติด Block)
             if (text && !text.includes('<!DOCTYPE html>') && !text.includes('accounts.google.com') && !text.includes('Sign in')) {
               csvText = text; fetchSuccess = true; break;
             }
@@ -602,7 +673,6 @@
         } catch (e) { console.warn('Endpoint retry...', e); }
       }
 
-      // ถ้าพังหมด (โดนองค์กรบล็อก) ให้โชว์หน้าจอขอลิงก์ Publish to web
       if (!fetchSuccess || !csvText) {
         showLoading(false);
         document.getElementById('dropZoneContainer').classList.remove('hidden');
@@ -621,7 +691,9 @@
         document.getElementById('dropZoneContainer').classList.add('hidden');
         document.getElementById('dashboardContent').classList.remove('hidden');
 
-        populateDropdowns(rawItems); updateUI(); showLoading(false);
+        populateDropdowns(rawItems); 
+        updateUI(); 
+        showLoading(false);
       } catch (err) {
         showLoading(false);
         document.getElementById('dropZoneContainer').classList.remove('hidden');
@@ -630,7 +702,6 @@
       }
     }
 
-    // Save User Custom Link from Fallback Screen
     function saveAndLoadCustomSheet() {
       const inputUrl = document.getElementById('customSheetUrl').value.trim();
       if (!inputUrl || !inputUrl.includes('pub?output=csv')) {
@@ -640,7 +711,6 @@
       loadFixedGoogleSheet(inputUrl);
     }
 
-    // Local Excel upload fallback
     function processExcelFile(file) {
       if (!file) return; showLoading(true, 'กำลังอ่านไฟล์ Excel...', '');
       const reader = new FileReader();
@@ -671,5 +741,7 @@
 
     window.addEventListener('DOMContentLoaded', () => { refreshIcons(); loadFixedGoogleSheet(); });
   </script>
+</body>
+</html>
 </body>
 </html>
