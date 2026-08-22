@@ -1,0 +1,1453 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enterprise Aging & NBS Analytics with Premium Makro Clearance Label Maker</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- SheetJS (Excel Parser) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <!-- html2canvas (Capture Dashboard) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,800&family=Oswald:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Prompt', sans-serif; }
+    .custom-scrollbar::-webkit-scrollbar { height: 7px; width: 7px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    .tab-btn.active { border-bottom: 2px solid #4f46e5; color: #4f46e5; font-weight: 600; }
+
+    /* CSS Texture ลอนคอนเทนเนอร์สีแดง Makro มิติสมจริง */
+    .makro-ribbed-bg {
+      background-color: #b3000b;
+      background-image: repeating-linear-gradient(
+        90deg,
+        #d1000f 0px,
+        #d1000f 3.5px,
+        #b3000b 3.5px,
+        #b3000b 9.5px,
+        #7d0006 9.5px,
+        #7d0006 13px
+      );
+    }
+
+    /* Print Styles for Perfect A4 Landscape (4-Up Grid) */
+    @media print {
+      @page {
+        size: A4 landscape;
+        margin: 0;
+      }
+      body * {
+        visibility: hidden !important;
+      }
+      #printContainer, #printContainer * {
+        visibility: visible !important;
+      }
+      #printContainer {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 297mm;
+        margin: 0;
+        padding: 0;
+        background: white;
+        display: block !important;
+      }
+      .a4-print-sheet {
+        width: 297mm;
+        height: 210mm;
+        page-break-after: always;
+        page-break-inside: avoid;
+        display: grid !important;
+        grid-template-columns: 148.5mm 148.5mm;
+        grid-template-rows: 105mm 105mm;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      .print-tag-cell {
+        width: 148.5mm;
+        height: 105mm;
+        box-sizing: border-box;
+      }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex flex-col items-center justify-center hidden">
+    <div class="bg-white p-6 rounded-3xl shadow-2xl flex flex-col items-center max-w-xs text-center space-y-3">
+      <div class="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+      <h3 id="loadingTitle" class="text-sm font-bold text-slate-800">กำลังประมวลผล...</h3>
+      <p id="loadingDesc" class="text-xs text-slate-500">กรุณารอสักครู่</p>
+    </div>
+  </div>
+
+  <!-- Header Bar -->
+  <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-wrap justify-between items-center py-3.5 gap-4">
+        <!-- Brand Title -->
+        <div class="flex items-center space-x-3">
+          <div class="p-2.5 bg-indigo-600 rounded-xl shadow-inner">
+            <i data-lucide="layers" class="w-6 h-6 text-white"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="text-lg font-bold tracking-tight">Aging & NBS Analytics Hub</h1>
+              <span class="px-2 py-0.5 text-[10px] font-semibold bg-rose-500/20 text-rose-300 border border-rose-400/30 rounded-full">Clearance Label Pro</span>
+            </div>
+            <p class="text-xs text-slate-400">ระบบบริหารสต็อกและจัดพิมพ์ป้าย Clearance Sale พร้อมคำนวณ % ลดจาก WAC</p>
+          </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="flex items-center flex-wrap gap-2.5">
+          <!-- Google Sheets Connect / Sync Button -->
+          <button onclick="openGSheetModal()" class="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-3.5 py-2 rounded-xl transition shadow-sm">
+            <i data-lucide="sheet" class="w-4 h-4"></i>
+            <span id="gsheetBtnText">ดึงจาก Google Sheet</span>
+          </button>
+
+          <button id="openClearanceBtn" class="flex items-center gap-1.5 bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold px-3.5 py-2 rounded-xl transition shadow-sm">
+            <i data-lucide="tags" class="w-4 h-4"></i>
+            <span>ทำป้าย Clearance (<span id="selectedCountHeader">0</span>)</span>
+          </button>
+
+          <button id="captureBtn" class="flex items-center gap-1.5 bg-cyan-700 hover:bg-cyan-600 text-white text-xs font-medium px-3.5 py-2 rounded-xl transition shadow-sm">
+            <i data-lucide="camera" class="w-4 h-4"></i>
+            <span>แคปรูปรายงาน</span>
+          </button>
+
+          <button id="exportCsvBtn" class="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium px-3.5 py-2 rounded-xl transition">
+            <i data-lucide="download" class="w-4 h-4 text-slate-400"></i>
+            <span>ส่งออก Excel</span>
+          </button>
+          
+          <label class="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-4 py-2 rounded-xl cursor-pointer transition shadow-md">
+            <i data-lucide="file-spreadsheet" class="w-4 h-4"></i>
+            <span>นำเข้าไฟล์ Excel</span>
+            <input type="file" id="fileInput" accept=".xlsx, .xls, .csv" class="hidden">
+          </label>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav id="navTabs" class="flex space-x-8 text-sm overflow-x-auto custom-scrollbar border-t border-slate-800 mt-1">
+        <button onclick="switchTab('overview')" id="tab-overview" class="tab-btn active py-3 px-1 text-slate-300 hover:text-white flex items-center gap-2 whitespace-nowrap">
+          <i data-lucide="layout-dashboard" class="w-4 h-4"></i> ภาพรวมบริหาร (Overview)
+        </button>
+        <button onclick="switchTab('aging')" id="tab-aging" class="tab-btn py-3 px-1 text-slate-400 hover:text-white flex items-center gap-2 whitespace-nowrap">
+          <i data-lucide="clock-alert" class="w-4 h-4"></i> วิเคราะห์ Aging & สำรอง
+        </button>
+        <button onclick="switchTab('nbs')" id="tab-nbs" class="tab-btn py-3 px-1 text-slate-400 hover:text-white flex items-center gap-2 whitespace-nowrap">
+          <i data-lucide="shield-alert" class="w-4 h-4"></i> สินค้าไม่เคลื่อนไหว (NBS)
+        </button>
+        <button onclick="switchTab('suppliers')" id="tab-suppliers" class="tab-btn py-3 px-1 text-slate-400 hover:text-white flex items-center gap-2 whitespace-nowrap">
+          <i data-lucide="users" class="w-4 h-4"></i> Buyer & ซัพพลายเออร์
+        </button>
+        <button onclick="switchTab('explorer')" id="tab-explorer" class="tab-btn py-3 px-1 text-slate-400 hover:text-white flex items-center gap-2 whitespace-nowrap">
+          <i data-lucide="table" class="w-4 h-4"></i> ตารางสืบค้น & เลือกทำป้าย (Data Explorer)
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Upload & Google Sheets Zone (Initial Screen) -->
+  <div id="dropZoneContainer" class="max-w-4xl mx-auto px-4 py-12 flex-1 flex flex-col justify-center items-center gap-6">
+    <!-- Google Sheet Card -->
+    <div class="w-full bg-gradient-to-r from-emerald-500 to-teal-600 rounded-3xl p-6 text-white shadow-lg flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-4">
+        <div class="p-3 bg-white/20 backdrop-blur rounded-2xl">
+          <i data-lucide="sheet" class="w-8 h-8 text-white"></i>
+        </div>
+        <div>
+          <h3 class="font-bold text-base">ดึงข้อมูลอัตโนมัติจาก Google Sheet</h3>
+          <p class="text-xs text-emerald-100 mt-0.5">วางลิงก์ Google Sheets เพื่อซิงค์ข้อมูลล่าสุดได้ตลอดเวลา</p>
+        </div>
+      </div>
+      <button onclick="openGSheetModal()" class="px-5 py-2.5 bg-white hover:bg-emerald-50 text-emerald-800 font-bold text-xs rounded-xl shadow transition whitespace-nowrap">
+        เชื่อมต่อ Google Sheet
+      </button>
+    </div>
+
+    <!-- Excel Drag & Drop Zone -->
+    <div id="dropZone" class="w-full border-2 border-dashed border-indigo-300 hover:border-indigo-500 bg-white hover:bg-indigo-50/40 rounded-3xl p-10 text-center transition cursor-pointer shadow-sm flex flex-col items-center justify-center space-y-4">
+      <div class="p-4 bg-indigo-100 text-indigo-600 rounded-full">
+        <i data-lucide="upload-cloud" class="w-10 h-10"></i>
+      </div>
+      <div>
+        <h3 class="text-base font-bold text-slate-800">หรือ ลากไฟล์ Excel (.xlsx) มาวางที่นี่</h3>
+        <p class="text-xs text-slate-500 mt-1">หรือคลิกเพื่อเลือกไฟล์ <span class="font-mono text-indigo-600 font-semibold">AgingNBS_Item_Layout.xlsx</span></p>
+      </div>
+      <button type="button" onclick="document.getElementById('fileInput').click()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold rounded-xl shadow-md transition flex items-center gap-2">
+        <i data-lucide="file-plus" class="w-4 h-4"></i> เลือกไฟล์ Excel
+      </button>
+    </div>
+  </div>
+
+  <!-- Google Sheet Input Modal -->
+  <div id="gsheetModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+    <div class="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+      <div class="bg-emerald-700 text-white p-5 flex justify-between items-center">
+        <div class="flex items-center gap-2.5">
+          <i data-lucide="sheet" class="w-5 h-5"></i>
+          <h3 class="text-sm font-bold">เชื่อมต่อข้อมูลจาก Google Sheet</h3>
+        </div>
+        <button onclick="closeGSheetModal()" class="p-1 text-white/80 hover:text-white rounded-lg hover:bg-white/10"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div class="p-6 space-y-4 text-xs">
+        <div class="bg-emerald-50 border border-emerald-200 p-3 rounded-xl text-emerald-800 space-y-1">
+          <p class="font-semibold">⚠️ ข้อกำหนดก่อนใช้งาน:</p>
+          <p>ใน Google Sheet ให้กดปุ่ม <b>แชร์ (Share)</b> ➔ ตั้งค่าเป็น <b>"ทุกคนที่มีลิงก์ (Anyone with the link)"</b> และเลือกสิทธิ์เป็น <b>"มีสิทธิ์อ่าน (Viewer)"</b></p>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">ลิงก์ Google Sheet หรือ Sheet ID:</label>
+          <input type="text" id="gsheetUrlInput" placeholder="https://docs.google.com/spreadsheets/d/1A2B3C.../edit" 
+                 class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+          <p class="text-[11px] text-slate-400 mt-1">คัดลอก URL จากเบราว์เซอร์มาวางได้โดยตรง</p>
+        </div>
+
+        <div>
+          <label class="block font-bold text-slate-700 mb-1">ชื่อแท็บ (Sheet Name) <span class="font-normal text-slate-400">(เว้นว่างได้ ถ้าใช้แท็บแรก)</span>:</label>
+          <input type="text" id="gsheetTabInput" placeholder="เช่น Sheet1 หรือ AgingData" 
+                 class="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+        </div>
+      </div>
+      <div class="p-4 bg-slate-50 border-t flex justify-between items-center">
+        <button type="button" onclick="closeGSheetModal()" class="px-4 py-2 text-slate-600 hover:bg-slate-200 rounded-xl text-xs font-semibold">ยกเลิก</button>
+        <button type="button" onclick="handleFetchGSheet()" class="px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold shadow-md flex items-center gap-1.5">
+          <i data-lucide="download-cloud" class="w-4 h-4"></i> ดึงและอัปเดตข้อมูล
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Dashboard Container -->
+  <div id="dashboardContent" class="hidden flex-1 flex flex-col">
+    <!-- Filter Bar -->
+    <section class="bg-white border-b border-slate-200 shadow-sm sticky top-[108px] z-20">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2.5 items-center">
+          <div class="lg:col-span-2 relative">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
+            <input type="text" id="globalSearch" placeholder="ค้นหา รหัสสินค้า, ชื่อ, Dept, ซัพพลายเออร์, Buyer..." 
+                   class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+
+          <div>
+            <select id="filterDept" class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-xl px-2.5 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <option value="">ทุกรหัสแผนก (Dept No)</option>
+            </select>
+          </div>
+
+          <div>
+            <select id="filterAgingStatus" class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-xl px-2.5 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium">
+              <option value="">ทุกสถานะ Aging Status</option>
+            </select>
+          </div>
+
+          <div>
+            <select id="filterRisk" class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-xl px-2.5 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+              <option value="">ระดับความเสี่ยงทั้งหมด</option>
+              <option value="provision">เฉพาะรายการที่มีสำรอง (> 0)</option>
+              <option value="nbs90">สินค้าไม่ขาย > 90 วัน</option>
+              <option value="ownBrand">เฉพาะ Own Brand (Y)</option>
+            </select>
+          </div>
+
+          <div>
+            <button id="resetFilters" class="w-full py-2 px-3 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition flex items-center justify-center gap-1.5">
+              <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> ล้างตัวกรอง
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Capture Target Area -->
+    <div id="captureArea" class="bg-slate-50 p-2 sm:p-4 lg:p-6 flex-1">
+      <main class="max-w-7xl mx-auto space-y-6 w-full">
+
+        <!-- TAB 1: OVERVIEW -->
+        <div id="view-overview" class="tab-view space-y-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden">
+              <div class="flex justify-between items-start">
+                <div>
+                  <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">มูลค่าสต็อกรวม</span>
+                  <h3 id="kpiTotalValue" class="text-2xl font-bold text-slate-800 mt-1">฿0</h3>
+                  <p class="text-xs text-slate-500 mt-0.5">จากรายการสินค้า <span id="kpiTotalSku" class="font-semibold text-slate-700">0</span> SKU</p>
+                </div>
+                <div class="p-3 bg-indigo-50 text-indigo-600 rounded-2xl"><i data-lucide="boxes" class="w-5 h-5"></i></div>
+              </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden">
+              <div class="flex justify-between items-start">
+                <div>
+                  <span class="text-xs font-semibold text-amber-600 uppercase tracking-wider">สำรอง Aging (Provision)</span>
+                  <h3 id="kpiAgingProv" class="text-2xl font-bold text-amber-600 mt-1">฿0</h3>
+                  <p id="kpiAgingProvRatio" class="text-xs text-amber-700/80 mt-0.5">0% ของมูลค่ารวม</p>
+                </div>
+                <div class="p-3 bg-amber-50 text-amber-600 rounded-2xl"><i data-lucide="alert-triangle" class="w-5 h-5"></i></div>
+              </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden">
+              <div class="flex justify-between items-start">
+                <div>
+                  <span class="text-xs font-semibold text-rose-600 uppercase tracking-wider">สำรอง NBS (Non-Moving)</span>
+                  <h3 id="kpiNbsProv" class="text-2xl font-bold text-rose-600 mt-1">฿0</h3>
+                  <p id="kpiNbsProvRatio" class="text-xs text-rose-700/80 mt-0.5">0% ของมูลค่ารวม</p>
+                </div>
+                <div class="p-3 bg-rose-50 text-rose-600 rounded-2xl"><i data-lucide="shield-alert" class="w-5 h-5"></i></div>
+              </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden">
+              <div class="flex justify-between items-start">
+                <div>
+                  <span class="text-xs font-semibold text-emerald-600 uppercase tracking-wider">สต็อกปกติ (Normal Stock)</span>
+                  <h3 id="kpiNormalStock" class="text-2xl font-bold text-emerald-600 mt-1">฿0</h3>
+                  <p id="kpiNormalRatio" class="text-xs text-emerald-700/80 mt-0.5">0% ของมูลค่ารวม</p>
+                </div>
+                <div class="p-3 bg-emerald-50 text-emerald-600 rounded-2xl"><i data-lucide="check-circle" class="w-5 h-5"></i></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Charts Row -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center">
+              <div class="w-full flex justify-between items-center mb-3">
+                <h4 class="text-xs font-bold text-slate-700 uppercase flex items-center gap-1.5">
+                  <i data-lucide="pie-chart" class="w-4 h-4 text-indigo-500"></i> สัดส่วนมูลค่าตาม Dept No
+                </h4>
+                <span class="text-[11px] text-slate-400">Top 5 + อื่นๆ</span>
+              </div>
+              <div class="w-full h-64 relative flex items-center justify-center">
+                <canvas id="overviewPieChart"></canvas>
+              </div>
+            </div>
+
+            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm lg:col-span-2 flex flex-col">
+              <div class="w-full flex justify-between items-center mb-3">
+                <h4 class="text-xs font-bold text-slate-700 uppercase flex items-center gap-1.5">
+                  <i data-lucide="bar-chart-3" class="w-4 h-4 text-indigo-500"></i> เปรียบเทียบมูลค่าสต็อก & สำรองแยกตาม Dept No
+                </h4>
+                <span class="text-[11px] text-slate-400">Top 8 แผนก</span>
+              </div>
+              <div class="w-full h-64 relative">
+                <canvas id="overviewDeptBarChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: AGING & RISK MATRIX -->
+        <div id="view-aging" class="tab-view hidden space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+            <div class="bg-emerald-50 border border-emerald-100 p-4 rounded-2xl">
+              <span class="text-[11px] font-semibold text-emerald-700 uppercase">Normal (ปกติ)</span>
+              <h4 id="agingBucketNormal" class="text-xl font-bold text-emerald-800 mt-1">฿0</h4>
+            </div>
+            <div class="bg-blue-50 border border-blue-100 p-4 rounded-2xl">
+              <span class="text-[11px] font-semibold text-blue-700 uppercase">Alert (เฝ้าระวัง)</span>
+              <h4 id="agingBucketAlert" class="text-xl font-bold text-blue-800 mt-1">฿0</h4>
+            </div>
+            <div class="bg-amber-50 border border-amber-100 p-4 rounded-2xl">
+              <span class="text-[11px] font-semibold text-amber-700 uppercase">Attention (ติดตาม)</span>
+              <h4 id="agingBucketAttention" class="text-xl font-bold text-amber-800 mt-1">฿0</h4>
+            </div>
+            <div class="bg-orange-50 border border-orange-100 p-4 rounded-2xl">
+              <span class="text-[11px] font-semibold text-orange-700 uppercase">Critical (วิกฤต 25%)</span>
+              <h4 id="agingBucketCritical" class="text-xl font-bold text-orange-800 mt-1">฿0</h4>
+            </div>
+            <div class="bg-rose-50 border border-rose-100 p-4 rounded-2xl">
+              <span class="text-[11px] font-semibold text-rose-700 uppercase">Obsolete (เสื่อมสภาพ)</span>
+              <h4 id="agingBucketObsolete" class="text-xl font-bold text-rose-800 mt-1">฿0</h4>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col">
+              <h4 class="text-xs font-bold text-slate-700 uppercase mb-3"><i data-lucide="bar-chart-2" class="w-4 h-4 inline mr-1 text-indigo-500"></i> สัดส่วนมูลค่าสต็อกตาม Aging Tier</h4>
+              <div class="w-full h-72 relative"><canvas id="agingTierChart"></canvas></div>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col">
+              <h4 class="text-xs font-bold text-slate-700 uppercase mb-3"><i data-lucide="calculator" class="w-4 h-4 inline mr-1 text-indigo-500"></i> โครงสร้างเงินสำรอง Aging</h4>
+              <div class="w-full h-72 relative"><canvas id="agingProvisionBreakdownChart"></canvas></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: NON-MOVING STOCK (NBS) -->
+        <div id="view-nbs" class="tab-view hidden space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+              <div>
+                <span class="text-xs font-semibold text-slate-400 uppercase">มูลค่าสินค้าไม่ขาย > 60 วัน</span>
+                <h3 id="nbsVal60" class="text-2xl font-bold text-amber-600 mt-1">฿0</h3>
+              </div>
+              <div class="p-3 bg-amber-50 text-amber-600 rounded-2xl"><i data-lucide="calendar-clock" class="w-6 h-6"></i></div>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+              <div>
+                <span class="text-xs font-semibold text-slate-400 uppercase">มูลค่าสินค้าไม่ขาย > 90 วัน</span>
+                <h3 id="nbsVal90" class="text-2xl font-bold text-rose-600 mt-1">฿0</h3>
+              </div>
+              <div class="p-3 bg-rose-50 text-rose-600 rounded-2xl"><i data-lucide="timer-off" class="w-6 h-6"></i></div>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+              <div>
+                <span class="text-xs font-semibold text-slate-400 uppercase">มูลค่าสต็อกค้างเกิน 180 วัน</span>
+                <h3 id="nbsVal180" class="text-2xl font-bold text-purple-600 mt-1">฿0</h3>
+              </div>
+              <div class="p-3 bg-purple-50 text-purple-600 rounded-2xl"><i data-lucide="archive" class="w-6 h-6"></i></div>
+            </div>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm">
+            <h4 class="text-xs font-bold text-slate-700 uppercase mb-3"><i data-lucide="layers" class="w-4 h-4 inline mr-1 text-indigo-500"></i> สรุปการตั้งสำรอง NBS รายขั้น</h4>
+            <div class="w-full h-72 relative"><canvas id="nbsProvisionChart"></canvas></div>
+          </div>
+        </div>
+
+        <!-- TAB 4: BUYER & SUPPLIER ANALYSIS -->
+        <div id="view-suppliers" class="tab-view hidden space-y-6">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col">
+              <h4 class="text-xs font-bold text-slate-700 uppercase mb-3"><i data-lucide="truck" class="w-4 h-4 inline mr-1 text-indigo-500"></i> Top 8 ซัพพลายเออร์ที่มีมูลค่าสต็อกสูงสุด</h4>
+              <div class="w-full h-80 relative"><canvas id="supplierBarChart"></canvas></div>
+            </div>
+            <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col">
+              <h4 class="text-xs font-bold text-slate-700 uppercase mb-3"><i data-lucide="user-check" class="w-4 h-4 inline mr-1 text-indigo-500"></i> Top 8 ผู้จัดซื้อ (Buyer) ที่มีมูลค่าสต็อกค้างสูงสุด</h4>
+              <div class="w-full h-80 relative"><canvas id="buyerBarChart"></canvas></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 5: DATA EXPLORER & CLEARANCE SELECTION -->
+        <div id="view-explorer" class="tab-view hidden space-y-4">
+          <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+            <!-- Action Toolbar -->
+            <div class="p-4 bg-slate-50 border-b border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs">
+              <div class="flex items-center gap-3">
+                <span class="text-slate-500">แสดงผล <strong id="tableFilteredCount" class="text-slate-800">0</strong> รายการ</span>
+                <span class="px-2.5 py-1 bg-rose-50 text-rose-700 font-semibold rounded-full border border-rose-200">
+                  เลือกทำป้ายแล้ว <strong id="tableSelectedCount">0</strong> รายการ
+                </span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button onclick="selectAllCurrentPage()" class="px-2.5 py-1 bg-white border border-slate-200 hover:bg-slate-100 rounded-lg text-slate-700 font-medium transition">
+                  เลือกทั้งหมดในหน้านี้
+                </button>
+                <button onclick="clearAllSelections()" class="px-2.5 py-1 bg-white border border-slate-200 hover:bg-slate-100 rounded-lg text-slate-700 font-medium transition">
+                  ล้างที่เลือก
+                </button>
+                <span id="pageIndicatorText" class="font-medium text-slate-600 ml-2">หน้า 1 / 1</span>
+              </div>
+            </div>
+
+            <!-- Table -->
+            <div class="overflow-x-auto custom-scrollbar max-h-[580px]">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead class="bg-slate-100 text-slate-600 sticky top-0 z-10 border-b border-slate-200">
+                  <tr>
+                    <th class="p-3 text-center w-10">
+                      <input type="checkbox" id="masterCheckbox" class="rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                    </th>
+                    <th class="p-3 cursor-pointer hover:bg-slate-200" onclick="sortTable('itemNo')">รหัสสินค้า ⬍</th>
+                    <th class="p-3 min-w-[200px] cursor-pointer hover:bg-slate-200" onclick="sortTable('itemDesc')">ชื่อสินค้า ⬍</th>
+                    <th class="p-3 cursor-pointer hover:bg-slate-200" onclick="sortTable('deptNo')">Dept No ⬍</th>
+                    <th class="p-3 cursor-pointer hover:bg-slate-200" onclick="sortTable('agingStatus')">สถานะ Aging ⬍</th>
+                    <th class="p-3 text-right cursor-pointer hover:bg-slate-200" onclick="sortTable('stockQty')">คงเหลือ ⬍</th>
+                    <th class="p-3 text-right cursor-pointer hover:bg-slate-200 font-semibold text-rose-700" onclick="sortTable('buyPrice')">ราคาปกติ (WAC) ⬍</th>
+                    <th class="p-3 text-right cursor-pointer hover:bg-slate-200 font-semibold text-indigo-700" onclick="sortTable('sellPrice')">ราคาขาย (Selling) ⬍</th>
+                    <th class="p-3 text-right cursor-pointer hover:bg-slate-200 font-semibold text-emerald-700" onclick="sortTable('discountPct')">% ส่วนลด ⬍</th>
+                    <th class="p-3 text-center">รายละเอียด</th>
+                  </tr>
+                </thead>
+                <tbody id="mainTableBody" class="divide-y divide-slate-100"></tbody>
+              </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
+              <button id="btnPrevPage" class="px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg text-slate-600 disabled:opacity-40">ก่อนหน้า</button>
+              <select id="pageSizeSelect" class="text-xs bg-white border border-slate-200 rounded-lg p-1">
+                <option value="15">15 แถว</option>
+                <option value="30">30 แถว</option>
+                <option value="50">50 แถว</option>
+              </select>
+              <button id="btnNextPage" class="px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg text-slate-600 disabled:opacity-40">ถัดไป</button>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- FLOATING ACTION BAR -->
+  <div id="floatingActionBar" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-slate-900/90 backdrop-blur-md text-white px-5 py-3 rounded-2xl shadow-2xl z-40 flex items-center gap-4 transition-all duration-300 hidden">
+    <div class="flex items-center gap-2">
+      <span class="p-1.5 bg-rose-600 rounded-lg"><i data-lucide="tag" class="w-4 h-4"></i></span>
+      <span class="text-xs font-medium">เลือกสินค้า <strong id="floatingSelectedCount" class="text-rose-400 text-sm">0</strong> รายการ</span>
+    </div>
+    <button onclick="openClearanceModal()" class="px-4 py-2 bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs rounded-xl shadow-md transition flex items-center gap-1.5">
+      <i data-lucide="printer" class="w-4 h-4"></i> เปิดแบบพิมพ์ป้าย Clearance (4 ป้าย / A4)
+    </button>
+  </div>
+
+  <!-- CLEARANCE LABEL MAKER MODAL & PRINT PREVIEW -->
+  <div id="clearanceModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center hidden p-2 sm:p-4">
+    <div class="bg-white w-full max-w-6xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[96vh]">
+      <!-- Header -->
+      <div class="bg-red-700 text-white p-4 sm:p-5 flex justify-between items-center shadow-md">
+        <div class="flex items-center gap-3">
+          <div class="p-2 bg-white/20 rounded-xl"><i data-lucide="printer" class="w-5 h-5"></i></div>
+          <div>
+            <h3 class="text-base font-bold tracking-tight">แบบพิมพ์ป้าย Clearance Sale (A4 แนวนอน 4 ช่อง พร้อม % ส่วนลด)</h3>
+            <p class="text-xs text-red-100">ราคาปกติ (WAC) ➔ ราคาขาย (Selling Price) พร้อมคำนวณ % ลดอัตโนมัติ</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="window.print()" class="px-4 py-2 bg-white text-red-700 hover:bg-red-50 font-bold text-xs rounded-xl shadow-lg transition flex items-center gap-1.5">
+            <i data-lucide="printer" class="w-4 h-4"></i> สั่งพิมพ์ A4 (Print)
+          </button>
+          <button onclick="closeClearanceModal()" class="p-1.5 text-white/80 hover:text-white rounded-lg hover:bg-white/10"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="p-4 bg-red-50/50 border-b border-red-100 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div class="flex items-center flex-wrap gap-3">
+          <label class="font-bold text-slate-700">ข้อความช่วงเวลาโปรโมชัน:</label>
+          <input type="text" id="promoDateText" value="พิเศษ : 28 ก.ค. - 4 ส.ค. 2569" 
+                 class="px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-slate-800 w-64 focus:outline-none focus:ring-2 focus:ring-red-500 font-medium">
+          <button onclick="applyPromoDateToAll()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white font-medium rounded-lg shadow-sm">นำไปใช้กับทุกป้าย</button>
+        </div>
+        <div class="text-slate-600 font-medium">
+          จำนวนป้าย: <strong id="clearanceTotalTags" class="text-red-600 font-bold text-sm">0</strong> ป้าย (กระดาษ A4: <strong id="clearanceTotalSheets" class="text-slate-800 font-bold text-sm">0</strong> แผ่น)
+        </div>
+      </div>
+
+      <!-- Preview Area -->
+      <div class="p-4 overflow-y-auto custom-scrollbar flex-1 bg-slate-200 space-y-6" id="previewContainer">
+        <!-- Dynamic Sheets -->
+      </div>
+    </div>
+  </div>
+
+  <!-- HIDDEN PRINT CONTAINER (FOR HARDWARE A4 PRINTING ONLY) -->
+  <div id="printContainer" class="hidden"></div>
+
+  <!-- ITEM 360° DETAILS MODAL -->
+  <div id="itemDetailModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+    <div class="bg-white w-full max-w-3xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div class="bg-slate-900 text-white p-5 flex justify-between items-start">
+        <div>
+          <div class="flex items-center gap-2">
+            <span id="modalDeptBadge" class="px-2 py-0.5 bg-indigo-500/30 text-indigo-300 border border-indigo-400/40 rounded-md text-[11px] font-semibold">Dept</span>
+            <span id="modalItemNo" class="text-xs text-slate-400 font-mono">Item No</span>
+            <span id="modalStatusBadge" class="px-2 py-0.5 rounded-md text-[11px] font-semibold">Normal</span>
+          </div>
+          <h3 id="modalItemDesc" class="text-base font-bold mt-1 text-slate-100">ชื่อสินค้า</h3>
+        </div>
+        <button onclick="closeModal()" class="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div class="p-6 overflow-y-auto custom-scrollbar space-y-6 text-xs">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-4 rounded-2xl border">
+          <div><span class="text-slate-400 block text-[10px]">ซัพพลายเออร์</span><strong id="modalSupplier">-</strong></div>
+          <div><span class="text-slate-400 block text-[10px]">ผู้จัดซื้อ (Buyer)</span><strong id="modalBuyer">-</strong></div>
+          <div><span class="text-slate-400 block text-[10px]">Own Brand</span><strong id="modalBrand">-</strong></div>
+          <div><span class="text-slate-400 block text-[10px]">หน่วยนับ</span><strong id="modalUom">-</strong></div>
+        </div>
+        <div>
+          <h5 class="font-bold text-slate-700 uppercase mb-2">ข้อมูลสต็อกและมูลค่า</h5>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div class="p-3 bg-indigo-50 rounded-xl"><span class="block text-[10px]">จำนวนสต็อก</span><strong id="modalStockQty">0</strong></div>
+            <div class="p-3 bg-blue-50 rounded-xl"><span class="block text-[10px]">ราคาทุน WAC (ราคาปกติ)</span><strong id="modalWac">฿0</strong></div>
+            <div class="p-3 bg-slate-50 rounded-xl"><span class="block text-[10px]">ราคาขายปลีก (ราคาลดแล้ว)</span><strong id="modalSelling">฿0</strong></div>
+            <div class="p-3 bg-emerald-50 rounded-xl"><span class="block text-[10px]">มูลค่ารวม</span><strong id="modalGrandTotal">฿0</strong></div>
+          </div>
+        </div>
+        <div>
+          <h5 class="font-bold text-slate-700 uppercase mb-2">การเคลื่อนไหว</h5>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <div class="p-3 bg-slate-50 rounded-xl"><span>รับล่าสุด</span><strong id="modalLastDelivery" class="block mt-1">-</strong></div>
+            <div class="p-3 bg-slate-50 rounded-xl"><span>ขายล่าสุด</span><strong id="modalLastSold" class="block mt-1">-</strong></div>
+            <div class="p-3 bg-slate-50 rounded-xl"><span>อายุ Aging (วัน)</span><strong id="modalAgingDays" class="block mt-1 text-amber-600">0</strong></div>
+            <div class="p-3 bg-slate-50 rounded-xl"><span>ไม่เคลื่อนไหว NBS (วัน)</span><strong id="modalNbsDays" class="block mt-1 text-rose-600">0</strong></div>
+          </div>
+        </div>
+        <div class="bg-rose-50/40 p-4 rounded-2xl border border-rose-100">
+          <h5 class="font-bold text-rose-800 mb-2">การตั้งสำรองสุทธิ</h5>
+          <div class="grid grid-cols-3 gap-3">
+            <div><span>สำรอง Aging</span><strong id="modalAgingProv" class="block text-amber-700">฿0</strong></div>
+            <div><span>สำรอง NBS</span><strong id="modalNbsProv" class="block text-rose-700">฿0</strong></div>
+            <div><span>สำรองสุทธิ</span><strong id="modalTotalProv" class="block text-purple-800">฿0</strong></div>
+          </div>
+        </div>
+      </div>
+      <div class="p-4 bg-slate-50 border-t flex justify-end">
+        <button onclick="closeModal()" class="px-5 py-2 bg-slate-800 text-white rounded-xl text-xs font-semibold">ปิด</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let rawItems = [];
+    let filteredItems = [];
+    let selectedItemIds = new Set();
+    let clearanceItemsData = {};
+    
+    let currentPage = 1;
+    let itemsPerPage = 15;
+    let sortColumn = 'grandTotal';
+    let sortDirection = 'desc';
+    let currentTab = 'overview';
+
+    // Google Sheets Config Cache
+    let savedGSheetId = localStorage.getItem('makro_gsheet_id') || '';
+    let savedGSheetTab = localStorage.getItem('makro_gsheet_tab') || '';
+
+    let overviewPieChart = null, overviewDeptBarChart = null, agingTierChart = null, agingProvisionBreakdownChart = null, nbsProvisionChart = null, supplierBarChart = null, buyerBarChart = null;
+
+    const formatCurrency = (val) => '฿' + Number(val || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const formatNumber = (val) => Number(val || 0).toLocaleString('th-TH');
+
+    const AGING_STATUS_MAP = {
+      'NORMAL': { label: 'Normal (ปกติ)', short: 'Normal', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+      'AL': { label: 'AL - Alert (เฝ้าระวัง)', short: 'Alert (AL)', color: 'bg-blue-50 text-blue-700 border-blue-200' },
+      'AT': { label: 'AT - Attention (ติดตาม)', short: 'Attention (AT)', color: 'bg-amber-50 text-amber-700 border-amber-200' },
+      'CR': { label: 'CR - Critical (วิกฤต 25%)', short: 'Critical (CR)', color: 'bg-orange-50 text-orange-700 border-orange-200' },
+      'OB': { label: 'OB - Obsolete (เสื่อมสภาพ)', short: 'Obsolete (OB)', color: 'bg-rose-50 text-rose-700 border-rose-200' },
+      'FP': { label: 'FP - Full Provision (สำรอง 100%)', short: 'Full Prov (FP)', color: 'bg-purple-50 text-purple-700 border-purple-200' }
+    };
+
+    function getStatusBadge(code) {
+      const info = AGING_STATUS_MAP[code] || { short: code, color: 'bg-slate-100 text-slate-600' };
+      return `<span class="px-2 py-0.5 rounded text-[10px] font-semibold border ${info.color}">${info.short}</span>`;
+    }
+
+    function refreshIcons() { if (window.lucide) lucide.createIcons(); }
+
+    function showLoading(show, title = 'กำลังประมวลผล...', desc = 'กรุณารอสักครู่') {
+      document.getElementById('loadingTitle').innerText = title;
+      document.getElementById('loadingDesc').innerText = desc;
+      document.getElementById('loadingOverlay').classList.toggle('hidden', !show);
+    }
+
+    function switchTab(tabId) {
+      currentTab = tabId;
+      document.querySelectorAll('.tab-view').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      const targetView = document.getElementById('view-' + tabId);
+      const targetBtn = document.getElementById('tab-' + tabId);
+      if (targetView) targetView.classList.remove('hidden');
+      if (targetBtn) targetBtn.classList.add('active');
+      setTimeout(() => { renderVisibleTabCharts(); }, 30);
+    }
+
+    function isSummaryRow(row) {
+      const agingGrp = String(row['Aging Group'] || '').trim().toLowerCase();
+      const itemNo = row['Item No'];
+      return agingGrp.startsWith('sum') || agingGrp.includes('grand total') || !itemNo || String(itemNo).trim() === '';
+    }
+
+    function cleanRow(row) {
+      const deptNo = row['Department No'] !== undefined && row['Department No'] !== null ? String(row['Department No']).replace('.0', '') : 'N/A';
+      const rawStatus = row['Aging Status'] ? String(row['Aging Status']).trim().toUpperCase() : 'NORMAL';
+      const sellPrice = Number(row['Selling Price'] || 0);
+      const buyPrice = Number(row['Buy Price (WAC)'] || 0);
+      const discountPct = buyPrice > 0 ? Math.round(((buyPrice - sellPrice) / buyPrice) * 100) : 0;
+      
+      return {
+        itemNo: row['Item No'] ? String(row['Item No']).replace('.0', '') : '-',
+        itemDesc: row['Item Desc'] || 'ไม่ระบุชื่อสินค้า',
+        subclassDesc: row['Subclass Desc'] || row['Class Desc'] || '',
+        deptNo: deptNo,
+        department: row['Department Desc'] || 'Other',
+        agingStatus: rawStatus,
+        buyer: row['Buyer Name'] || row['Buyer'] || 'Unknown',
+        supplierNo: row['Supplier No'] || '-',
+        supplier: row['Supplier Desc'] || 'ไม่ระบุผู้ผลิต',
+        uom: row['UOM'] || 'EA',
+        ownBrand: row['Own Brand'] === 'Y' ? 'Own Brand (Y)' : 'Commercial (N)',
+        isOwnBrand: row['Own Brand'] === 'Y',
+        lastDelivery: row['Last Delivery Date'] || '-',
+        lastSold: row['Last Sold Date'] || '-',
+        stockQty: Number(row['Stock Qty'] || 0),
+        agingDays: Number(row['No of Aging Days'] || 0),
+        nbsDays: Number(row['No of NBS Days'] || 0),
+        sellPrice: sellPrice,
+        buyPrice: buyPrice,
+        discountPct: discountPct,
+        grandTotal: Number(row['Grand Total'] || 0),
+        normalAging: Number(row['Normal (Aging)'] || 0),
+        alert: Number(row['Alert'] || 0),
+        attention: Number(row['Attention'] || 0),
+        critical: Number(row['Critical'] || 0),
+        obsolete: Number(row['Obsolete'] || 0),
+        agingProv25: Number(row['Aging Provision Critical 25%'] || 0),
+        agingProv50: Number(row['Aging Provision Obsolete 50%'] || 0),
+        agingProv100: Number(row['Aging Provision 100%'] || 0),
+        agingProvision: Number(row['Total Aging Provision'] || 0),
+        nbs60: Number(row['NBS Stock  > 60 Days'] || 0),
+        nbs90: Number(row['NBS Stock > 90 Days'] || 0),
+        stockOver180: Number(row['Stock Over 180 Days'] || 0),
+        nbsProv25: Number(row['NBS Provision 25%'] || 0),
+        nbsProv50: Number(row['NBS Provision 50%'] || 0),
+        nbsProv75: Number(row['NBS Provision 75%'] || 0),
+        nbsProv100: Number(row['NBS Provision 100%'] || 0),
+        nbsProvision: Number(row['Total NBS Provision'] || 0),
+        totalProvision: Number(row['Total Provision Net Aging and NBS'] || (Number(row['Total Aging Provision'] || 0) + Number(row['Total NBS Provision'] || 0)))
+      };
+    }
+
+    function populateDropdowns(data) {
+      const deptSelect = document.getElementById('filterDept');
+      const statusSelect = document.getElementById('filterAgingStatus');
+
+      const deptMap = {};
+      data.forEach(d => {
+        if (d.deptNo && !deptMap[d.deptNo]) deptMap[d.deptNo] = d.department;
+      });
+      deptSelect.innerHTML = '<option value="">ทุกรหัสแผนก (Dept No)</option>' + Object.entries(deptMap).map(([no, desc]) => `<option value="${no}">Dept ${no} - ${desc}</option>`).join('');
+
+      const presentStatuses = [...new Set(data.map(d => d.agingStatus))];
+      statusSelect.innerHTML = '<option value="">ทุกสถานะ Aging Status</option>' + 
+        presentStatuses.map(status => {
+          const info = AGING_STATUS_MAP[status] || { label: status };
+          return `<option value="${status}">${info.label}</option>`;
+        }).join('');
+    }
+
+    function applyFilters() {
+      const query = document.getElementById('globalSearch').value.trim().toLowerCase();
+      const selectedDept = document.getElementById('filterDept').value;
+      const selectedStatus = document.getElementById('filterAgingStatus').value;
+      const selectedRisk = document.getElementById('filterRisk').value;
+
+      filteredItems = rawItems.filter(item => {
+        const matchSearch = !query || 
+          item.itemNo.toLowerCase().includes(query) || 
+          item.itemDesc.toLowerCase().includes(query) || 
+          item.supplier.toLowerCase().includes(query) || 
+          item.buyer.toLowerCase().includes(query) || 
+          item.deptNo.toLowerCase().includes(query);
+
+        const matchDept = !selectedDept || item.deptNo === selectedDept;
+        const matchStatus = !selectedStatus || item.agingStatus === selectedStatus;
+
+        let matchRisk = true;
+        if (selectedRisk === 'provision') matchRisk = item.totalProvision > 0;
+        else if (selectedRisk === 'nbs90') matchRisk = item.nbsDays >= 90;
+        else if (selectedRisk === 'ownBrand') matchRisk = item.isOwnBrand;
+
+        return matchSearch && matchDept && matchStatus && matchRisk;
+      });
+      currentPage = 1;
+      updateUI();
+    }
+
+    function updateKPIs() {
+      const totalVal = filteredItems.reduce((acc, r) => acc + r.grandTotal, 0);
+      const totalSku = filteredItems.length;
+      const agingProv = filteredItems.reduce((acc, r) => acc + r.agingProvision, 0);
+      const nbsProv = filteredItems.reduce((acc, r) => acc + r.nbsProvision, 0);
+      const normalVal = filteredItems.reduce((acc, r) => acc + r.normalAging, 0);
+
+      document.getElementById('kpiTotalValue').innerText = formatCurrency(totalVal);
+      document.getElementById('kpiTotalSku').innerText = formatNumber(totalSku);
+      document.getElementById('kpiAgingProv').innerText = formatCurrency(agingProv);
+      document.getElementById('kpiNbsProv').innerText = formatCurrency(nbsProv);
+      document.getElementById('kpiNormalStock').innerText = formatCurrency(normalVal);
+
+      const agingPct = totalVal > 0 ? ((agingProv / totalVal) * 100).toFixed(1) : 0;
+      const nbsPct = totalVal > 0 ? ((nbsProv / totalVal) * 100).toFixed(1) : 0;
+      const normPct = totalVal > 0 ? ((normalVal / totalVal) * 100).toFixed(1) : 0;
+
+      document.getElementById('kpiAgingProvRatio').innerText = `${agingPct}% ของมูลค่ารวม`;
+      document.getElementById('kpiNbsProvRatio').innerText = `${nbsPct}% ของมูลค่ารวม`;
+      document.getElementById('kpiNormalRatio').innerText = `${normPct}% ของมูลค่ารวม`;
+
+      document.getElementById('agingBucketNormal').innerText = formatCurrency(normalVal);
+      document.getElementById('agingBucketAlert').innerText = formatCurrency(filteredItems.reduce((a, r) => a + r.alert, 0));
+      document.getElementById('agingBucketAttention').innerText = formatCurrency(filteredItems.reduce((a, r) => a + r.attention, 0));
+      document.getElementById('agingBucketCritical').innerText = formatCurrency(filteredItems.reduce((a, r) => a + r.critical, 0));
+      document.getElementById('agingBucketObsolete').innerText = formatCurrency(filteredItems.reduce((a, r) => a + r.obsolete, 0));
+
+      document.getElementById('nbsVal60').innerText = formatCurrency(filteredItems.reduce((a, r) => a + r.nbs60, 0));
+      document.getElementById('nbsVal90').innerText = formatCurrency(filteredItems.reduce((a, r) => a + r.nbs90, 0));
+      document.getElementById('nbsVal180').innerText = formatCurrency(filteredItems.reduce((a, r) => a + r.stockOver180, 0));
+    }
+
+    function renderVisibleTabCharts() {
+      if (currentTab === 'overview') {
+        const deptTotals = {}; filteredItems.forEach(r => { deptTotals[r.deptNo] = (deptTotals[r.deptNo] || 0) + r.grandTotal; });
+        const sortedDeptList = Object.entries(deptTotals).sort((a, b) => b[1] - a[1]);
+        const top5Depts = sortedDeptList.slice(0, 5); const otherDeptSum = sortedDeptList.slice(5).reduce((sum, d) => sum + d[1], 0);
+
+        const pieLabels = top5Depts.map(d => 'Dept ' + d[0]); const pieData = top5Depts.map(d => d[1]);
+        if (otherDeptSum > 0) { pieLabels.push('Dept อื่นๆ'); pieData.push(otherDeptSum); }
+
+        if (overviewPieChart) overviewPieChart.destroy();
+        const ctxPie = document.getElementById('overviewPieChart')?.getContext('2d');
+        if (ctxPie) {
+          overviewPieChart = new Chart(ctxPie, {
+            type: 'doughnut',
+            data: { labels: pieLabels, datasets: [{ data: pieData, backgroundColor: ['#4f46e5', '#06b6d4', '#f59e0b', '#ec4899', '#10b981', '#94a3b8'] }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { family: 'Prompt', size: 10 } } } } }
+          });
+        }
+
+        const top8Depts = sortedDeptList.slice(0, 8);
+        if (overviewDeptBarChart) overviewDeptBarChart.destroy();
+        const ctxDeptBar = document.getElementById('overviewDeptBarChart')?.getContext('2d');
+        if (ctxDeptBar) {
+          overviewDeptBarChart = new Chart(ctxDeptBar, {
+            type: 'bar',
+            data: {
+              labels: top8Depts.map(d => 'Dept ' + d[0]),
+              datasets: [
+                { label: 'มูลค่าสต็อกรวม', data: top8Depts.map(d => d[1]), backgroundColor: '#4f46e5', borderRadius: 4 },
+                { label: 'สำรอง Aging', data: top8Depts.map(d => filteredItems.filter(r => r.deptNo === d[0]).reduce((sum, r) => sum + r.agingProvision, 0)), backgroundColor: '#f59e0b', borderRadius: 4 },
+                { label: 'สำรอง NBS', data: top8Depts.map(d => filteredItems.filter(r => r.deptNo === d[0]).reduce((sum, r) => sum + r.nbsProvision, 0)), backgroundColor: '#f43f5e', borderRadius: 4 }
+              ]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { boxWidth: 12, font: { family: 'Prompt', size: 10 } } } } }
+          });
+        }
+      } else if (currentTab === 'aging') {
+        if (agingTierChart) agingTierChart.destroy();
+        const ctxTier = document.getElementById('agingTierChart')?.getContext('2d');
+        if (ctxTier) {
+          agingTierChart = new Chart(ctxTier, {
+            type: 'bar',
+            data: {
+              labels: ['Normal', 'Alert', 'Attention', 'Critical', 'Obsolete'],
+              datasets: [{ data: [filteredItems.reduce((a, r) => a + r.normalAging, 0), filteredItems.reduce((a, r) => a + r.alert, 0), filteredItems.reduce((a, r) => a + r.attention, 0), filteredItems.reduce((a, r) => a + r.critical, 0), filteredItems.reduce((a, r) => a + r.obsolete, 0)], backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#f97316', '#ef4444'], borderRadius: 6 }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+          });
+        }
+
+        if (agingProvisionBreakdownChart) agingProvisionBreakdownChart.destroy();
+        const ctxProv = document.getElementById('agingProvisionBreakdownChart')?.getContext('2d');
+        if (ctxProv) {
+          agingProvisionBreakdownChart = new Chart(ctxProv, {
+            type: 'doughnut',
+            data: { labels: ['สำรอง Critical (25%)', 'สำรอง Obsolete (50%)', 'สำรอง Obsolete (100%)'], datasets: [{ data: [filteredItems.reduce((a, r) => a + r.agingProv25, 0), filteredItems.reduce((a, r) => a + r.agingProv50, 0), filteredItems.reduce((a, r) => a + r.agingProv100, 0)], backgroundColor: ['#f97316', '#f43f5e', '#881337'] }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { family: 'Prompt', size: 10 } } } } }
+          });
+        }
+      } else if (currentTab === 'nbs') {
+        if (nbsProvisionChart) nbsProvisionChart.destroy();
+        const ctxNbs = document.getElementById('nbsProvisionChart')?.getContext('2d');
+        if (ctxNbs) {
+          nbsProvisionChart = new Chart(ctxNbs, {
+            type: 'bar',
+            data: { labels: ['NBS 25%', 'NBS 50%', 'NBS 75%', 'NBS 100%'], datasets: [{ data: [filteredItems.reduce((a, r) => a + r.nbsProv25, 0), filteredItems.reduce((a, r) => a + r.nbsProv50, 0), filteredItems.reduce((a, r) => a + r.nbsProv75, 0), filteredItems.reduce((a, r) => a + r.nbsProv100, 0)], backgroundColor: '#e11d48', borderRadius: 6 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+          });
+        }
+      } else if (currentTab === 'suppliers') {
+        const supTotals = {}; filteredItems.forEach(r => { supTotals[r.supplier] = (supTotals[r.supplier] || 0) + r.grandTotal; });
+        const topSups = Object.entries(supTotals).sort((a, b) => b[1] - a[1]).slice(0, 8);
+        if (supplierBarChart) supplierBarChart.destroy();
+        const ctxSup = document.getElementById('supplierBarChart')?.getContext('2d');
+        if (ctxSup) {
+          supplierBarChart = new Chart(ctxSup, { type: 'bar', indexAxis: 'y', data: { labels: topSups.map(s => s[0].slice(0, 15)), datasets: [{ data: topSups.map(s => s[1]), backgroundColor: '#6366f1', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
+        }
+
+        const buyerTotals = {}; filteredItems.forEach(r => { buyerTotals[r.buyer] = (buyerTotals[r.buyer] || 0) + r.grandTotal; });
+        const topBuyers = Object.entries(buyerTotals).sort((a, b) => b[1] - a[1]).slice(0, 8);
+        if (buyerBarChart) buyerBarChart.destroy();
+        const ctxBuyer = document.getElementById('buyerBarChart')?.getContext('2d');
+        if (ctxBuyer) {
+          buyerBarChart = new Chart(ctxBuyer, { type: 'bar', indexAxis: 'y', data: { labels: topBuyers.map(b => b[0].slice(0, 15)), datasets: [{ data: topBuyers.map(b => b[1]), backgroundColor: '#0ea5e9', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
+        }
+      }
+    }
+
+    // Selection
+    function toggleItemSelection(itemNo) {
+      if (selectedItemIds.has(itemNo)) {
+        selectedItemIds.delete(itemNo);
+      } else {
+        selectedItemIds.add(itemNo);
+        if (!clearanceItemsData[itemNo]) {
+          const item = rawItems.find(r => r.itemNo === itemNo);
+          clearanceItemsData[itemNo] = {
+            originalWac: item ? item.buyPrice : 0,
+            currentSellPrice: item ? item.sellPrice : 0,
+            promoText: document.getElementById('promoDateText').value
+          };
+        }
+      }
+      updateSelectionUI();
+    }
+
+    function selectAllCurrentPage() {
+      const totalPages = Math.ceil(filteredItems.length / itemsPerPage) || 1;
+      const startIdx = (currentPage - 1) * itemsPerPage;
+      const pageItems = filteredItems.slice(startIdx, startIdx + itemsPerPage);
+      
+      pageItems.forEach(item => {
+        selectedItemIds.add(item.itemNo);
+        if (!clearanceItemsData[item.itemNo]) {
+          clearanceItemsData[item.itemNo] = {
+            originalWac: item.buyPrice,
+            currentSellPrice: item.sellPrice,
+            promoText: document.getElementById('promoDateText').value
+          };
+        }
+      });
+      updateSelectionUI();
+      renderTable();
+    }
+
+    function clearAllSelections() {
+      selectedItemIds.clear();
+      updateSelectionUI();
+      renderTable();
+    }
+
+    function updateSelectionUI() {
+      const count = selectedItemIds.size;
+      document.getElementById('selectedCountHeader').innerText = count;
+      document.getElementById('tableSelectedCount').innerText = count;
+      document.getElementById('floatingSelectedCount').innerText = count;
+
+      const bar = document.getElementById('floatingActionBar');
+      if (count > 0) {
+        bar.classList.remove('hidden');
+      } else {
+        bar.classList.add('hidden');
+      }
+    }
+
+    function sortTable(column) {
+      if (sortColumn === column) { sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'; } else { sortColumn = column; sortDirection = 'desc'; }
+      filteredItems.sort((a, b) => {
+        let valA = a[column]; let valB = b[column];
+        if (typeof valA === 'string') return sortDirection === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        return sortDirection === 'asc' ? valA - valB : valB - valA;
+      });
+      renderTable();
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('mainTableBody');
+      const totalPages = Math.ceil(filteredItems.length / itemsPerPage) || 1;
+      currentPage = Math.max(1, Math.min(currentPage, totalPages));
+      const startIdx = (currentPage - 1) * itemsPerPage;
+      const pageItems = filteredItems.slice(startIdx, startIdx + itemsPerPage);
+
+      if (pageItems.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="10" class="p-8 text-center text-slate-400">ไม่พบรายการข้อมูล</td></tr>`;
+      } else {
+        tbody.innerHTML = pageItems.map(item => {
+          const isChecked = selectedItemIds.has(item.itemNo);
+          const pctColor = item.discountPct > 0 ? 'bg-amber-100 text-amber-800 font-bold' : 'bg-slate-100 text-slate-500';
+          return `
+            <tr class="hover:bg-slate-50 border-b border-slate-100 ${isChecked ? 'bg-rose-50/40' : ''}">
+              <td class="p-3 text-center">
+                <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleItemSelection('${item.itemNo}')" 
+                       class="rounded text-rose-600 focus:ring-rose-500 cursor-pointer w-4 h-4">
+              </td>
+              <td class="p-3 font-mono text-slate-700 font-semibold">${item.itemNo}</td>
+              <td class="p-3 font-medium max-w-[220px] truncate" title="${item.itemDesc}">${item.itemDesc}</td>
+              <td class="p-3"><span class="px-2 py-0.5 bg-slate-100 text-indigo-700 font-semibold rounded text-[11px]">Dept ${item.deptNo}</span></td>
+              <td class="p-3">${getStatusBadge(item.agingStatus)}</td>
+              <td class="p-3 text-right font-medium">${formatNumber(item.stockQty)}</td>
+              <td class="p-3 text-right font-semibold text-rose-700">${formatCurrency(item.buyPrice)}</td>
+              <td class="p-3 text-right font-bold text-indigo-700 text-sm">${formatCurrency(item.sellPrice)}</td>
+              <td class="p-3 text-right">
+                <span class="px-2 py-0.5 rounded text-[11px] ${pctColor}">
+                  ${item.discountPct > 0 ? `-${item.discountPct}%` : '0%'}
+                </span>
+              </td>
+              <td class="p-3 text-center">
+                <button onclick="openModal('${item.itemNo}')" class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold rounded-lg text-[11px] transition">ดู 360°</button>
+              </td>
+            </tr>`;
+        }).join('');
+      }
+      document.getElementById('tableFilteredCount').innerText = formatNumber(filteredItems.length);
+      document.getElementById('pageIndicatorText').innerText = `หน้า ${currentPage} / ${totalPages}`;
+      document.getElementById('btnPrevPage').disabled = currentPage === 1;
+      document.getElementById('btnNextPage').disabled = currentPage === totalPages;
+    }
+
+    // =========================================================================
+    // CLEARANCE LABEL GENERATOR
+    // =========================================================================
+    function openClearanceModal() {
+      if (selectedItemIds.size === 0) {
+        alert('กรุณาติ๊กเลือกสินค้าที่ต้องการทำป้าย Clearance ก่อนครับ');
+        return;
+      }
+      renderClearanceCards();
+      document.getElementById('clearanceModal').classList.remove('hidden');
+      refreshIcons();
+    }
+
+    function closeClearanceModal() {
+      document.getElementById('clearanceModal').classList.add('hidden');
+    }
+
+    function updateLabelPrices(itemNo, field, val) {
+      if (!clearanceItemsData[itemNo]) clearanceItemsData[itemNo] = {};
+      clearanceItemsData[itemNo][field] = Number(val);
+      
+      const conf = clearanceItemsData[itemNo];
+      const orig = conf.originalWac || 0;
+      const current = conf.currentSellPrice || 0;
+      const diff = orig - current;
+      const pct = orig > 0 ? Math.round((diff / orig) * 100) : 0;
+      
+      const diffEl = document.getElementById(`discount-val-${itemNo}`);
+      if (diffEl) diffEl.innerText = diff.toFixed(2);
+      const printDiffEl = document.getElementById(`print-discount-val-${itemNo}`);
+      if (printDiffEl) printDiffEl.innerText = diff.toFixed(2);
+
+      const pctEl = document.getElementById(`discount-pct-${itemNo}`);
+      if (pctEl) pctEl.innerText = pct > 0 ? `${pct}%` : '0%';
+      const printPctEl = document.getElementById(`print-discount-pct-${itemNo}`);
+      if (printPctEl) printPctEl.innerText = pct > 0 ? `${pct}%` : '0%';
+
+      const printPriceEl = document.getElementById(`print-price-${itemNo}`);
+      if (printPriceEl) printPriceEl.innerText = Math.round(current);
+
+      const printOrigEl = document.getElementById(`print-orig-${itemNo}`);
+      if (printOrigEl) printOrigEl.innerText = Math.round(orig);
+    }
+
+    function applyPromoDateToAll() {
+      const text = document.getElementById('promoDateText').value;
+      selectedItemIds.forEach(id => {
+        if (!clearanceItemsData[id]) clearanceItemsData[id] = {};
+        clearanceItemsData[id].promoText = text;
+      });
+      renderClearanceCards();
+    }
+
+    function generateSinglePremiumCard(item, isPrint = false) {
+      const conf = clearanceItemsData[item.itemNo] || {
+        originalWac: item.buyPrice,
+        currentSellPrice: item.sellPrice,
+        promoText: document.getElementById('promoDateText').value
+      };
+      
+      const diff = conf.originalWac - conf.currentSellPrice;
+      const pct = conf.originalWac > 0 ? Math.round((diff / conf.originalWac) * 100) : 0;
+      const promoText = conf.promoText || document.getElementById('promoDateText').value;
+
+      return `
+        <div class="relative w-full h-full makro-ribbed-bg overflow-hidden flex flex-col justify-between select-none box-border p-0 border border-slate-300">
+          <svg class="absolute inset-0 w-full h-full pointer-events-none z-0" viewBox="0 0 500 350" preserveAspectRatio="none">
+            <path d="M 0,0 L 500,0 L 500,312 C 380,312 280,328 175,314 C 55,296 15,220 8,110 C 3,40 0,0 0,0 Z" 
+                  fill="#ffffff" stroke="#c4121a" stroke-width="4.5" stroke-linejoin="round"/>
+          </svg>
+
+          <div class="relative z-10 px-5 pt-3.5 pb-1 flex justify-between items-start">
+            <div class="max-w-[68%] space-y-0.5">
+              <span class="text-xs font-bold text-slate-800 tracking-tight block font-mono">รหัส ${item.itemNo}</span>
+              <h4 class="text-sm sm:text-base font-extrabold text-slate-950 leading-tight line-clamp-1" title="${item.itemDesc}">${item.itemDesc}</h4>
+              <p class="text-[10.5px] text-slate-500 line-clamp-1 font-medium">${item.subclassDesc || item.department}</p>
+            </div>
+
+            <div class="relative flex flex-col items-center">
+              <div class="bg-gradient-to-b from-amber-400 via-orange-500 to-red-600 text-white px-3.5 py-1 rounded-2xl shadow-lg border-2 border-white text-center transform -rotate-1">
+                <span class="text-xs sm:text-sm font-black tracking-wider uppercase block drop-shadow font-sans text-yellow-50" style="font-style: italic;">CLEARANCE</span>
+                <span class="text-[9.5px] sm:text-[10px] font-extrabold tracking-widest uppercase block -mt-1 drop-shadow text-white">SALE</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="relative z-10 px-6 py-0 flex items-center justify-between my-auto">
+            <div class="space-y-1.5 pl-1">
+              <div class="flex items-center gap-2">
+                <div class="relative inline-block">
+                  ${isPrint ? `
+                    <span id="print-orig-${item.itemNo}" class="text-2xl sm:text-3xl font-bold text-red-600 relative inline-block">
+                      ${Math.round(conf.originalWac)}
+                      <span class="absolute left-[-4px] right-[-4px] top-1/2 h-[2.5px] bg-red-600 transform -rotate-12"></span>
+                    </span>
+                  ` : `
+                    <div class="relative flex items-center">
+                      <input type="number" value="${Math.round(conf.originalWac)}" 
+                             onchange="updateLabelPrices('${item.itemNo}', 'originalWac', this.value)"
+                             title="ราคาปกติ (Buy Price WAC)"
+                             class="w-16 text-center text-xl font-bold text-red-600 border border-red-200 bg-red-50/60 rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-red-500 font-sans">
+                      <span class="absolute left-[-2px] right-[-2px] top-1/2 h-[2px] bg-red-600 transform -rotate-12 pointer-events-none"></span>
+                    </div>
+                  `}
+                </div>
+
+                <div class="bg-gradient-to-r from-amber-400 to-yellow-400 text-red-950 px-2.5 py-0.5 rounded-lg shadow-sm border border-yellow-200 text-center transform -rotate-2">
+                  <span class="text-[10px] sm:text-[11px] font-black uppercase tracking-tight block">
+                    ลด <span id="${isPrint ? 'print-' : ''}discount-pct-${item.itemNo}" class="text-xs sm:text-sm font-black text-red-900">${pct > 0 ? `${pct}%` : '0%'}</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="text-right pr-2">
+              ${isPrint ? `
+                <span id="print-price-${item.itemNo}" class="text-6xl sm:text-7xl font-black text-black tracking-tighter leading-none" style="font-family: 'Oswald', 'Prompt', sans-serif;">
+                  ${Math.round(conf.currentSellPrice)}
+                </span>
+              ` : `
+                <div class="flex items-center gap-1 justify-end">
+                  <input type="number" value="${Math.round(conf.currentSellPrice)}" 
+                         onchange="updateLabelPrices('${item.itemNo}', 'currentSellPrice', this.value)"
+                         title="ราคาขายปัจจุบัน (Selling Price)"
+                         class="w-28 text-right text-4xl sm:text-5xl font-black text-black border border-slate-300 bg-white rounded-lg px-2 py-0.5 focus:ring-2 focus:ring-red-500 font-sans">
+                </div>
+              `}
+            </div>
+          </div>
+
+          <div class="relative z-10 px-5 pb-2.5 flex justify-between items-end">
+            <div class="pl-1 pb-0.5">
+              <span class="text-white font-black text-xl sm:text-2xl tracking-tighter lowercase font-sans drop-shadow-md select-none">makro</span>
+            </div>
+
+            <div class="text-right space-y-0.5">
+              <p class="text-xs sm:text-sm font-bold text-slate-900 leading-none">
+                ถูกลง <span id="${isPrint ? 'print-' : ''}discount-val-${item.itemNo}" class="text-sm sm:text-base font-black text-slate-950 font-mono">${diff.toFixed(2)}</span>
+              </p>
+              <p class="text-[9.5px] sm:text-[10.5px] font-medium text-slate-700 leading-tight">
+                ${promoText}
+              </p>
+            </div>
+          </div>
+
+        </div>
+      `;
+    }
+
+    function renderClearanceCards() {
+      const previewContainer = document.getElementById('previewContainer');
+      const printContainer = document.getElementById('printContainer');
+
+      const items = Array.from(selectedItemIds).map(id => rawItems.find(r => r.itemNo === id)).filter(Boolean);
+      const totalCards = items.length;
+      const totalSheets = Math.ceil(totalCards / 4) || 1;
+
+      document.getElementById('clearanceTotalTags').innerText = totalCards;
+      document.getElementById('clearanceTotalSheets').innerText = totalSheets;
+
+      let previewHTML = '';
+      let printHTML = '';
+
+      for (let i = 0; i < items.length; i += 4) {
+        const sheetItems = items.slice(i, i + 4);
+        const sheetNo = Math.floor(i / 4) + 1;
+
+        previewHTML += `
+          <div class="bg-white p-4 rounded-3xl shadow-xl border border-slate-300 space-y-2 max-w-4xl mx-auto">
+            <div class="flex justify-between items-center text-xs text-slate-500 pb-2 border-b border-slate-100">
+              <span class="font-bold text-slate-800 text-sm">แผ่นที่ ${sheetNo} / ${totalSheets} (A4 แนวนอน - 4 ป้าย)</span>
+              <span class="text-slate-400">แก้ไขตัวเลขราคา WAC หรือราคาขายเพื่อดู % และส่วนลดได้ทันที</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-slate-100 p-3 rounded-2xl border border-slate-300">
+              ${sheetItems.map(item => `
+                <div class="rounded-2xl overflow-hidden shadow-md" style="aspect-ratio: 1.414 / 1; min-height: 245px;">
+                  ${generateSinglePremiumCard(item, false)}
+                </div>
+              `).join('')}
+              ${sheetItems.length < 4 ? Array(4 - sheetItems.length).fill(0).map(() => `
+                <div class="border-2 border-dashed border-slate-300 bg-white/40 rounded-2xl flex items-center justify-center text-slate-400 text-xs font-medium" style="aspect-ratio: 1.414 / 1;">
+                  ช่องว่างสำหรับตัด
+                </div>
+              `).join('') : ''}
+            </div>
+          </div>
+        `;
+
+        printHTML += `
+          <div class="a4-print-sheet">
+            ${sheetItems.map(item => `
+              <div class="print-tag-cell">
+                ${generateSinglePremiumCard(item, true)}
+              </div>
+            `).join('')}
+            ${sheetItems.length < 4 ? Array(4 - sheetItems.length).fill(0).map(() => `
+              <div class="print-tag-cell border border-dashed border-slate-200"></div>
+            `).join('') : ''}
+          </div>
+        `;
+      }
+
+      previewContainer.innerHTML = previewHTML;
+      printContainer.innerHTML = printHTML;
+    }
+
+    function openModal(itemNo) {
+      const item = rawItems.find(r => r.itemNo === itemNo); if (!item) return;
+      const statusInfo = AGING_STATUS_MAP[item.agingStatus] || { label: item.agingStatus, color: 'bg-slate-100 text-slate-700' };
+
+      document.getElementById('modalDeptBadge').innerText = `Dept ${item.deptNo} (${item.department})`;
+      document.getElementById('modalItemNo').innerText = `SKU: ${item.itemNo}`;
+      
+      const modalBadge = document.getElementById('modalStatusBadge');
+      modalBadge.innerText = statusInfo.label;
+      modalBadge.className = `px-2 py-0.5 rounded-md text-[11px] font-semibold border ${statusInfo.color}`;
+
+      document.getElementById('modalItemDesc').innerText = item.itemDesc;
+      document.getElementById('modalSupplier').innerText = item.supplier;
+      document.getElementById('modalBuyer').innerText = item.buyer;
+      document.getElementById('modalBrand').innerText = item.ownBrand;
+      document.getElementById('modalUom').innerText = item.uom;
+      document.getElementById('modalStockQty').innerText = formatNumber(item.stockQty);
+      document.getElementById('modalWac').innerText = formatCurrency(item.buyPrice);
+      document.getElementById('modalSelling').innerText = formatCurrency(item.sellPrice);
+      document.getElementById('modalGrandTotal').innerText = formatCurrency(item.grandTotal);
+      document.getElementById('modalLastDelivery').innerText = item.lastDelivery;
+      document.getElementById('modalLastSold').innerText = item.lastSold;
+      document.getElementById('modalAgingDays').innerText = `${item.agingDays} วัน`;
+      document.getElementById('modalNbsDays').innerText = `${item.nbsDays} วัน`;
+      document.getElementById('modalAgingProv').innerText = formatCurrency(item.agingProvision);
+      document.getElementById('modalNbsProv').innerText = formatCurrency(item.nbsProvision);
+      document.getElementById('modalTotalProv').innerText = formatCurrency(item.totalProvision);
+      document.getElementById('itemDetailModal').classList.remove('hidden'); refreshIcons();
+    }
+
+    function closeModal() { document.getElementById('itemDetailModal').classList.add('hidden'); }
+
+    function exportFilteredCSV() {
+      if (filteredItems.length === 0) { alert('ไม่มีข้อมูลสำหรับส่งออก'); return; }
+      const ws = XLSX.utils.json_to_sheet(filteredItems.map(i => ({ 
+        'Item No': i.itemNo, 
+        'Item Desc': i.itemDesc, 
+        'Dept No': i.deptNo, 
+        'Department': i.department,
+        'Aging Status': i.agingStatus,
+        'Stock Qty': i.stockQty,
+        'Normal Price (WAC)': i.buyPrice,
+        'Current Selling Price': i.sellPrice,
+        'Discount %': `${i.discountPct}%`,
+        'Aging Days': i.agingDays,
+        'Grand Total (THB)': i.grandTotal, 
+        'Total Provision (THB)': i.totalProvision 
+      })));
+      const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Report');
+      XLSX.writeFile(wb, 'Aging_NBS_Report.xlsx');
+    }
+
+    function captureDashboard() {
+      const target = document.getElementById('captureArea');
+      const originalBtnText = document.getElementById('captureBtn').innerHTML;
+      document.getElementById('captureBtn').innerHTML = `<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> <span>กำลังบันทึกภาพ...</span>`;
+      refreshIcons();
+
+      html2canvas(target, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#f8fafc'
+      }).then(canvas => {
+        const image = canvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.download = `Dashboard_${currentTab}_${new Date().toISOString().slice(0,10)}.png`;
+        link.href = image;
+        link.click();
+        document.getElementById('captureBtn').innerHTML = originalBtnText;
+        refreshIcons();
+      }).catch(err => {
+        alert('เกิดข้อผิดพลาดในการบันทึกภาพ');
+        document.getElementById('captureBtn').innerHTML = originalBtnText;
+        refreshIcons();
+      });
+    }
+
+    function updateUI() {
+      updateKPIs();
+      renderVisibleTabCharts();
+      renderTable();
+      updateSelectionUI();
+      refreshIcons();
+    }
+
+    // =========================================================================
+    // GOOGLE SHEETS LIVE DATA INTEGRATION ENGINE
+    // =========================================================================
+    function openGSheetModal() {
+      if (savedGSheetId) document.getElementById('gsheetUrlInput').value = savedGSheetId;
+      if (savedGSheetTab) document.getElementById('gsheetTabInput').value = savedGSheetTab;
+      document.getElementById('gsheetModal').classList.remove('hidden');
+      refreshIcons();
+    }
+
+    function closeGSheetModal() {
+      document.getElementById('gsheetModal').classList.add('hidden');
+    }
+
+    function extractGSheetId(input) {
+      if (!input) return '';
+      const match = input.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+      return match ? match[1] : input.trim();
+    }
+
+    async function fetchFromGoogleSheet(sheetIdOrUrl, sheetTab = '') {
+      const sheetId = extractGSheetId(sheetIdOrUrl);
+      if (!sheetId) {
+        alert('กรุณากรอก URL หรือ ID ของ Google Sheet ให้ถูกต้อง');
+        return;
+      }
+
+      showLoading(true, 'กำลังเชื่อมต่อ Google Sheet...', 'กำลังดึงข้อมูลล่าสุดจากคลาวด์');
+
+      try {
+        let exportUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv`;
+        if (sheetTab && sheetTab.trim() !== '') {
+          exportUrl += `&sheet=${encodeURIComponent(sheetTab.trim())}`;
+        }
+
+        const response = await fetch(exportUrl);
+        if (!response.ok) {
+          throw new Error('ไม่สามารถดึงข้อมูลได้ (โปรดตรวจสอบว่าตั้งค่าแชร์ "ทุกคนที่มีลิงก์มีสิทธิ์อ่าน" หรือยัง)');
+        }
+
+        const csvText = await response.text();
+        const workbook = XLSX.read(csvText, { type: 'string' });
+        const firstSheetName = workbook.SheetNames[0];
+        const json = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheetName]);
+
+        if (!json || json.length === 0) {
+          throw new Error('ไม่พบแถวข้อมูลใน Google Sheet');
+        }
+
+        rawItems = json.filter(row => !isSummaryRow(row)).map(cleanRow);
+        filteredItems = [...rawItems];
+
+        // Save for instant re-sync
+        savedGSheetId = sheetId;
+        savedGSheetTab = sheetTab;
+        localStorage.setItem('makro_gsheet_id', sheetId);
+        localStorage.setItem('makro_gsheet_tab', sheetTab);
+
+        document.getElementById('gsheetBtnText').innerText = 'รีเฟรชข้อมูล (Sync)';
+        document.getElementById('dropZoneContainer').classList.add('hidden');
+        document.getElementById('dashboardContent').classList.remove('hidden');
+
+        populateDropdowns(rawItems);
+        updateUI();
+        showLoading(false);
+        closeGSheetModal();
+      } catch (error) {
+        showLoading(false);
+        alert('เกิดข้อผิดพลาดในการโหลดข้อมูลจาก Google Sheet:\n' + error.message);
+      }
+    }
+
+    function handleFetchGSheet() {
+      const urlInput = document.getElementById('gsheetUrlInput').value.trim();
+      const tabInput = document.getElementById('gsheetTabInput').value.trim();
+      fetchFromGoogleSheet(urlInput, tabInput);
+    }
+
+    // =========================================================================
+    // LOCAL EXCEL PROCESSOR
+    // =========================================================================
+    function processExcelFile(file) {
+      if (!file) return;
+      showLoading(true, 'กำลังอ่านไฟล์ Excel...', 'กำลังแปลงโครงสร้างตาราง');
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const data = new Uint8Array(evt.target.result);
+          const workbook = XLSX.read(data, { type: 'array', dense: true });
+          const sheetName = workbook.SheetNames[0];
+          const json = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+
+          if (!json || json.length === 0) {
+            throw new Error('ไม่พบข้อมูลในไฟล์ Excel');
+          }
+
+          rawItems = json.filter(row => !isSummaryRow(row)).map(cleanRow);
+          filteredItems = [...rawItems];
+
+          document.getElementById('dropZoneContainer').classList.add('hidden');
+          document.getElementById('dashboardContent').classList.remove('hidden');
+
+          populateDropdowns(rawItems);
+          updateUI();
+          showLoading(false);
+        } catch (err) {
+          showLoading(false);
+          alert('เกิดข้อผิดพลาดในการอ่านไฟล์: ' + err.message);
+        }
+      };
+
+      reader.onerror = function() {
+        showLoading(false);
+        alert('ไม่สามารถเปิดอ่านไฟล์ได้ กรุณาลองใหม่อีกครั้ง');
+      };
+
+      reader.readAsArrayBuffer(file);
+    }
+
+    const fileInput = document.getElementById('fileInput');
+    fileInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      processExcelFile(file);
+      e.target.value = '';
+    });
+
+    const dropZone = document.getElementById('dropZone');
+    ['dragenter', 'dragover'].forEach(name => {
+      dropZone.addEventListener(name, (e) => { e.preventDefault(); dropZone.classList.add('border-indigo-600', 'bg-indigo-50'); });
+    });
+    ['dragleave', 'drop'].forEach(name => {
+      dropZone.addEventListener(name, (e) => { e.preventDefault(); dropZone.classList.remove('border-indigo-600', 'bg-indigo-50'); });
+    });
+    dropZone.addEventListener('drop', (e) => {
+      const dt = e.dataTransfer;
+      if (dt.files && dt.files.length > 0) {
+        processExcelFile(dt.files[0]);
+      }
+    });
+
+    // Event Listeners
+    document.getElementById('globalSearch').addEventListener('input', applyFilters);
+    document.getElementById('filterDept').addEventListener('change', applyFilters);
+    document.getElementById('filterAgingStatus').addEventListener('change', applyFilters);
+    document.getElementById('filterRisk').addEventListener('change', applyFilters);
+    document.getElementById('captureBtn').addEventListener('click', captureDashboard);
+    document.getElementById('exportCsvBtn').addEventListener('click', exportFilteredCSV);
+    document.getElementById('openClearanceBtn').addEventListener('click', openClearanceModal);
+    
+    document.getElementById('resetFilters').addEventListener('click', () => { 
+      document.getElementById('globalSearch').value = ''; 
+      document.getElementById('filterDept').value = ''; 
+      document.getElementById('filterAgingStatus').value = ''; 
+      document.getElementById('filterRisk').value = ''; 
+      applyFilters(); 
+    });
+
+    document.getElementById('btnPrevPage').addEventListener('click', () => { if (currentPage > 1) { currentPage--; renderTable(); } });
+    document.getElementById('btnNextPage').addEventListener('click', () => { currentPage++; renderTable(); });
+    document.getElementById('pageSizeSelect').addEventListener('change', (e) => { itemsPerPage = Number(e.target.value); currentPage = 1; renderTable(); });
+
+    // Pre-fill button state if already saved
+    if (savedGSheetId) {
+      document.getElementById('gsheetBtnText').innerText = 'รีเฟรชข้อมูล (Sync)';
+    }
+
+    refreshIcons();
+  </script>
+</body>
+</html>
