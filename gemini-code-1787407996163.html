@@ -1,0 +1,1414 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enterprise Aging & NBS Analytics with Premium Makro Clearance Label Maker</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- SheetJS (Excel Parser) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <!-- html2canvas (Capture Dashboard) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Prompt:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,800&family=Oswald:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Prompt', sans-serif; }
+    .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+    .tab-btn.active { border-bottom: 2px solid #4f46e5; color: #4f46e5; font-weight: 600; }
+    .mobile-nav-btn.active { color: #6366f1; }
+
+    /* CSS Texture ลอนคอนเทนเนอร์สีแดง Makro มิติสมจริง */
+    .makro-ribbed-bg {
+      background-color: #b3000b;
+      background-image: repeating-linear-gradient(
+        90deg,
+        #d1000f 0px,
+        #d1000f 3.5px,
+        #b3000b 3.5px,
+        #b3000b 9.5px,
+        #7d0006 9.5px,
+        #7d0006 13px
+      );
+    }
+
+    /* Print Styles for Perfect A4 Landscape (4-Up Grid) */
+    @media print {
+      @page {
+        size: A4 landscape;
+        margin: 0;
+      }
+      body * {
+        visibility: hidden !important;
+      }
+      #printContainer, #printContainer * {
+        visibility: visible !important;
+      }
+      #printContainer {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 297mm;
+        margin: 0;
+        padding: 0;
+        background: white;
+        display: block !important;
+      }
+      .a4-print-sheet {
+        width: 297mm;
+        height: 210mm;
+        page-break-after: always;
+        page-break-inside: avoid;
+        display: grid !important;
+        grid-template-columns: 148.5mm 148.5mm;
+        grid-template-rows: 105mm 105mm;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      .print-tag-cell {
+        width: 148.5mm;
+        height: 105mm;
+        box-sizing: border-box;
+      }
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col pb-16 md:pb-0">
+
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" class="fixed inset-0 bg-slate-900/70 backdrop-blur-sm z-50 flex flex-col items-center justify-center">
+    <div class="bg-white p-6 rounded-3xl shadow-2xl flex flex-col items-center max-w-xs text-center space-y-3">
+      <div class="w-12 h-12 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
+      <h3 id="loadingTitle" class="text-sm font-bold text-slate-800">กำลังซิงค์ข้อมูล...</h3>
+      <p id="loadingDesc" class="text-xs text-slate-500">กำลังเชื่อมต่อ Google Sheets กรุณารอสักครู่</p>
+    </div>
+  </div>
+
+  <!-- Header Bar -->
+  <header class="bg-slate-900 text-white shadow-lg sticky top-0 z-30">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between items-center py-3 gap-2">
+        <!-- Brand Title -->
+        <div class="flex items-center space-x-2.5">
+          <div class="p-2 bg-indigo-600 rounded-xl shadow-inner">
+            <i data-lucide="layers" class="w-5 h-5 text-white"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <h1 class="text-sm sm:text-base font-bold tracking-tight">Aging & NBS Analytics</h1>
+              <span class="px-1.5 py-0.5 text-[9px] font-semibold bg-rose-500/20 text-rose-300 border border-rose-400/30 rounded-full">Pro</span>
+            </div>
+            <p class="text-[10px] text-slate-400 hidden sm:block">ระบบบริหารสต็อกและจัดพิมพ์ป้าย Clearance Sale พร้อม % ส่วนลด</p>
+          </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="flex items-center gap-1.5 sm:gap-2">
+          <button onclick="loadFixedGoogleSheet()" title="รีเฟรชข้อมูลสต็อก" class="flex items-center gap-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-xl transition shadow-sm">
+            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i>
+            <span class="hidden sm:inline">รีเฟรช</span>
+          </button>
+
+          <button id="openClearanceBtn" class="flex items-center gap-1 bg-rose-600 hover:bg-rose-500 text-white text-xs font-semibold px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl transition shadow-sm">
+            <i data-lucide="tags" class="w-3.5 h-3.5"></i>
+            <span>ป้าย (<span id="selectedCountHeader">0</span>)</span>
+          </button>
+
+          <button id="captureBtn" class="hidden sm:flex items-center gap-1 bg-cyan-700 hover:bg-cyan-600 text-white text-xs font-medium px-3 py-2 rounded-xl transition shadow-sm">
+            <i data-lucide="camera" class="w-3.5 h-3.5"></i>
+            <span>แคปรูป</span>
+          </button>
+
+          <button id="exportCsvBtn" class="hidden sm:flex items-center gap-1 bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 text-xs font-medium px-3 py-2 rounded-xl transition">
+            <i data-lucide="download" class="w-3.5 h-3.5 text-slate-400"></i>
+            <span>Excel</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Desktop Navigation Tabs -->
+      <nav id="navTabs" class="hidden md:flex space-x-8 text-sm overflow-x-auto custom-scrollbar border-t border-slate-800 mt-1">
+        <button onclick="switchTab('overview')" id="tab-overview" class="tab-btn active py-3 px-1 text-slate-300 hover:text-white flex items-center gap-2 whitespace-nowrap">
+          <i data-lucide="layout-dashboard" class="w-4 h-4"></i> ภาพรวมบริหาร
+        </button>
+        <button onclick="switchTab('aging')" id="tab-aging" class="tab-btn py-3 px-1 text-slate-400 hover:text-white flex items-center gap-2 whitespace-nowrap">
+          <i data-lucide="clock-alert" class="w-4 h-4"></i> วิเคราะห์ Aging
+        </button>
+        <button onclick="switchTab('nbs')" id="tab-nbs" class="tab-btn py-3 px-1 text-slate-400 hover:text-white flex items-center gap-2 whitespace-nowrap">
+          <i data-lucide="shield-alert" class="w-4 h-4"></i> สินค้า NBS
+        </button>
+        <button onclick="switchTab('suppliers')" id="tab-suppliers" class="tab-btn py-3 px-1 text-slate-400 hover:text-white flex items-center gap-2 whitespace-nowrap">
+          <i data-lucide="users" class="w-4 h-4"></i> Buyer & ซัพพลายเออร์
+        </button>
+        <button onclick="switchTab('explorer')" id="tab-explorer" class="tab-btn py-3 px-1 text-slate-400 hover:text-white flex items-center gap-2 whitespace-nowrap">
+          <i data-lucide="table" class="w-4 h-4"></i> รายการสินค้า & ป้าย
+        </button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Mobile Bottom Navigation Bar -->
+  <div class="md:hidden fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 z-40 flex justify-around items-center py-2 text-[10px] text-slate-400">
+    <button onclick="switchTab('overview')" id="mob-tab-overview" class="mobile-nav-btn active flex flex-col items-center gap-0.5">
+      <i data-lucide="layout-dashboard" class="w-4 h-4"></i> ภาพรวม
+    </button>
+    <button onclick="switchTab('aging')" id="mob-tab-aging" class="mobile-nav-btn flex flex-col items-center gap-0.5">
+      <i data-lucide="clock-alert" class="w-4 h-4"></i> Aging
+    </button>
+    <button onclick="switchTab('nbs')" id="mob-tab-nbs" class="mobile-nav-btn flex flex-col items-center gap-0.5">
+      <i data-lucide="shield-alert" class="w-4 h-4"></i> NBS
+    </button>
+    <button onclick="switchTab('suppliers')" id="mob-tab-suppliers" class="mobile-nav-btn flex flex-col items-center gap-0.5">
+      <i data-lucide="users" class="w-4 h-4"></i> ผู้ค้า
+    </button>
+    <button onclick="switchTab('explorer')" id="mob-tab-explorer" class="mobile-nav-btn flex flex-col items-center gap-0.5">
+      <i data-lucide="list" class="w-4 h-4"></i> สินค้า
+    </button>
+  </div>
+
+  <!-- Fallback Screen in case loading fails -->
+  <div id="dropZoneContainer" class="max-w-4xl mx-auto px-4 py-8 flex-1 flex flex-col justify-center items-center hidden">
+    <div class="w-full bg-rose-50 border border-rose-200 rounded-3xl p-6 text-center space-y-3">
+      <div class="p-3 bg-rose-100 text-rose-600 rounded-full w-12 h-12 flex items-center justify-center mx-auto">
+        <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+      </div>
+      <h3 class="text-sm font-bold text-rose-900">ไม่สามารถเชื่อมต่อ Google Sheet อัตโนมัติได้</h3>
+      <p class="text-xs text-rose-700">โปรดตรวจสอบว่าเปิดสิทธิ์แชร์เป็น "ทุกคนที่มีลิงก์มีสิทธิ์อ่าน (Viewer)" แล้วหรือยัง</p>
+      <div class="flex justify-center gap-3 pt-2">
+        <button onclick="loadFixedGoogleSheet()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-semibold">
+          ลองโหลดใหม่อีกครั้ง
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Dashboard Container -->
+  <div id="dashboardContent" class="flex-1 flex flex-col">
+    <!-- Filter Bar (Responsive with Class No & Class Desc) -->
+    <section class="bg-white border-b border-slate-200 shadow-sm sticky top-[49px] md:top-[98px] z-20">
+      <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-2 sm:py-3">
+        <!-- Search bar always visible -->
+        <div class="flex gap-2 items-center">
+          <div class="relative flex-1">
+            <i data-lucide="search" class="w-3.5 h-3.5 text-slate-400 absolute left-3 top-2.5"></i>
+            <input type="text" id="globalSearch" placeholder="ค้นหา รหัส, ชื่อสินค้า, Dept, Class, ซัพพลายเออร์..." 
+                   class="w-full pl-8 pr-3 py-1.5 sm:py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500">
+          </div>
+          <button onclick="toggleMobileFilters()" class="md:hidden p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl">
+            <i data-lucide="sliders-horizontal" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <!-- Filter Selects (Dropdowns) -->
+        <div id="filterSection" class="hidden md:grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mt-2 pt-2 border-t border-slate-100 md:border-0 md:mt-2.5 md:pt-0">
+          <div>
+            <select id="filterDept" class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-xl px-2.5 py-1.5 focus:ring-2 focus:ring-indigo-500">
+              <option value="">ทุกรหัสแผนก (Dept No)</option>
+            </select>
+          </div>
+
+          <div>
+            <select id="filterClass" class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-xl px-2.5 py-1.5 focus:ring-2 focus:ring-indigo-500">
+              <option value="">ทุกหมวด (Class No / Desc)</option>
+            </select>
+          </div>
+
+          <div>
+            <select id="filterAgingStatus" class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-xl px-2.5 py-1.5 focus:ring-2 focus:ring-indigo-500 font-medium">
+              <option value="">ทุกสถานะ Aging</option>
+            </select>
+          </div>
+
+          <div>
+            <select id="filterRisk" class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-xs rounded-xl px-2.5 py-1.5 focus:ring-2 focus:ring-indigo-500">
+              <option value="">ระดับความเสี่ยงทั้งหมด</option>
+              <option value="provision">มีสำรอง (> 0)</option>
+              <option value="nbs90">ไม่ขาย > 90 วัน</option>
+              <option value="ownBrand">เฉพาะ Own Brand (Y)</option>
+            </select>
+          </div>
+
+          <div class="col-span-2 sm:col-span-1">
+            <button id="resetFilters" class="w-full py-1.5 px-3 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl transition flex items-center justify-center gap-1.5">
+              <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> ล้างตัวกรอง
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Capture Target Area -->
+    <div id="captureArea" class="bg-slate-50 p-2 sm:p-4 lg:p-6 flex-1">
+      <main class="max-w-7xl mx-auto space-y-4 sm:space-y-6 w-full">
+
+        <!-- TAB 1: OVERVIEW -->
+        <div id="view-overview" class="tab-view space-y-4 sm:space-y-6">
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+            <div class="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden">
+              <span class="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase tracking-wider block">มูลค่าสต็อกรวม</span>
+              <h3 id="kpiTotalValue" class="text-lg sm:text-2xl font-bold text-slate-800 mt-0.5">฿0</h3>
+              <p class="text-[10px] text-slate-500 mt-0.5">สินค้า <span id="kpiTotalSku" class="font-semibold text-slate-700">0</span> SKU</p>
+            </div>
+
+            <div class="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden">
+              <span class="text-[10px] sm:text-xs font-semibold text-amber-600 uppercase tracking-wider block">สำรอง Aging</span>
+              <h3 id="kpiAgingProv" class="text-lg sm:text-2xl font-bold text-amber-600 mt-0.5">฿0</h3>
+              <p id="kpiAgingProvRatio" class="text-[10px] text-amber-700/80 mt-0.5">0% ของรวม</p>
+            </div>
+
+            <div class="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden">
+              <span class="text-[10px] sm:text-xs font-semibold text-rose-600 uppercase tracking-wider block">สำรอง NBS</span>
+              <h3 id="kpiNbsProv" class="text-lg sm:text-2xl font-bold text-rose-600 mt-0.5">฿0</h3>
+              <p id="kpiNbsProvRatio" class="text-[10px] text-rose-700/80 mt-0.5">0% ของรวม</p>
+            </div>
+
+            <div class="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-100 shadow-sm relative overflow-hidden">
+              <span class="text-[10px] sm:text-xs font-semibold text-emerald-600 uppercase tracking-wider block">สต็อกปกติ</span>
+              <h3 id="kpiNormalStock" class="text-lg sm:text-2xl font-bold text-emerald-600 mt-0.5">฿0</h3>
+              <p id="kpiNormalRatio" class="text-[10px] text-emerald-700/80 mt-0.5">0% ของรวม</p>
+            </div>
+          </div>
+
+          <!-- Charts Row -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+            <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col items-center">
+              <div class="w-full flex justify-between items-center mb-2">
+                <h4 class="text-xs font-bold text-slate-700 uppercase flex items-center gap-1.5">
+                  <i data-lucide="pie-chart" class="w-3.5 h-3.5 text-indigo-500"></i> สัดส่วนตาม Dept No
+                </h4>
+              </div>
+              <div class="w-full h-56 sm:h-64 relative flex items-center justify-center">
+                <canvas id="overviewPieChart"></canvas>
+              </div>
+            </div>
+
+            <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-sm lg:col-span-2 flex flex-col">
+              <div class="w-full flex justify-between items-center mb-2">
+                <h4 class="text-xs font-bold text-slate-700 uppercase flex items-center gap-1.5">
+                  <i data-lucide="bar-chart-3" class="w-3.5 h-3.5 text-indigo-500"></i> สต็อก & สำรองแยกราย Dept
+                </h4>
+              </div>
+              <div class="w-full h-56 sm:h-64 relative">
+                <canvas id="overviewDeptBarChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 2: AGING & RISK MATRIX -->
+        <div id="view-aging" class="tab-view hidden space-y-4 sm:space-y-6">
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 sm:gap-3">
+            <div class="bg-emerald-50 border border-emerald-100 p-3 sm:p-4 rounded-2xl">
+              <span class="text-[10px] sm:text-[11px] font-semibold text-emerald-700 uppercase block">Normal (ปกติ)</span>
+              <h4 id="agingBucketNormal" class="text-base sm:text-xl font-bold text-emerald-800 mt-0.5">฿0</h4>
+            </div>
+            <div class="bg-blue-50 border border-blue-100 p-3 sm:p-4 rounded-2xl">
+              <span class="text-[10px] sm:text-[11px] font-semibold text-blue-700 uppercase block">Alert (เฝ้าระวัง)</span>
+              <h4 id="agingBucketAlert" class="text-base sm:text-xl font-bold text-blue-800 mt-0.5">฿0</h4>
+            </div>
+            <div class="bg-amber-50 border border-amber-100 p-3 sm:p-4 rounded-2xl">
+              <span class="text-[10px] sm:text-[11px] font-semibold text-amber-700 uppercase block">Attention (ติดตาม)</span>
+              <h4 id="agingBucketAttention" class="text-base sm:text-xl font-bold text-amber-800 mt-0.5">฿0</h4>
+            </div>
+            <div class="bg-orange-50 border border-orange-100 p-3 sm:p-4 rounded-2xl">
+              <span class="text-[10px] sm:text-[11px] font-semibold text-orange-700 uppercase block">Critical (25%)</span>
+              <h4 id="agingBucketCritical" class="text-base sm:text-xl font-bold text-orange-800 mt-0.5">฿0</h4>
+            </div>
+            <div class="bg-rose-50 border border-rose-100 p-3 sm:p-4 rounded-2xl col-span-2 sm:col-span-1">
+              <span class="text-[10px] sm:text-[11px] font-semibold text-rose-700 uppercase block">Obsolete (เสื่อมสภาพ)</span>
+              <h4 id="agingBucketObsolete" class="text-base sm:text-xl font-bold text-rose-800 mt-0.5">฿0</h4>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+            <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col">
+              <h4 class="text-xs font-bold text-slate-700 uppercase mb-2">มูลค่าสต็อกตาม Aging Tier</h4>
+              <div class="w-full h-64 sm:h-72 relative"><canvas id="agingTierChart"></canvas></div>
+            </div>
+            <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col">
+              <h4 class="text-xs font-bold text-slate-700 uppercase mb-2">โครงสร้างเงินสำรอง Aging</h4>
+              <div class="w-full h-64 sm:h-72 relative"><canvas id="agingProvisionBreakdownChart"></canvas></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 3: NON-MOVING STOCK (NBS) -->
+        <div id="view-nbs" class="tab-view hidden space-y-4 sm:space-y-6">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+              <div>
+                <span class="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase">ไม่ขาย > 60 วัน</span>
+                <h3 id="nbsVal60" class="text-lg sm:text-2xl font-bold text-amber-600 mt-0.5">฿0</h3>
+              </div>
+              <div class="p-2.5 bg-amber-50 text-amber-600 rounded-2xl"><i data-lucide="calendar-clock" class="w-5 h-5"></i></div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+              <div>
+                <span class="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase">ไม่ขาย > 90 วัน</span>
+                <h3 id="nbsVal90" class="text-lg sm:text-2xl font-bold text-rose-600 mt-0.5">฿0</h3>
+              </div>
+              <div class="p-2.5 bg-rose-50 text-rose-600 rounded-2xl"><i data-lucide="timer-off" class="w-5 h-5"></i></div>
+            </div>
+            <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
+              <div>
+                <span class="text-[10px] sm:text-xs font-semibold text-slate-400 uppercase">ค้างเกิน 180 วัน</span>
+                <h3 id="nbsVal180" class="text-lg sm:text-2xl font-bold text-purple-600 mt-0.5">฿0</h3>
+              </div>
+              <div class="p-2.5 bg-purple-50 text-purple-600 rounded-2xl"><i data-lucide="archive" class="w-5 h-5"></i></div>
+            </div>
+          </div>
+          <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-sm">
+            <h4 class="text-xs font-bold text-slate-700 uppercase mb-2">สรุปการตั้งสำรอง NBS</h4>
+            <div class="w-full h-64 sm:h-72 relative"><canvas id="nbsProvisionChart"></canvas></div>
+          </div>
+        </div>
+
+        <!-- TAB 4: BUYER & SUPPLIER ANALYSIS -->
+        <div id="view-suppliers" class="tab-view hidden space-y-4 sm:space-y-6">
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
+            <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col">
+              <h4 class="text-xs font-bold text-slate-700 uppercase mb-2">Top 8 ซัพพลายเออร์</h4>
+              <div class="w-full h-72 sm:h-80 relative"><canvas id="supplierBarChart"></canvas></div>
+            </div>
+            <div class="bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-sm flex flex-col">
+              <h4 class="text-xs font-bold text-slate-700 uppercase mb-2">Top 8 ผู้จัดซื้อ (Buyer)</h4>
+              <div class="w-full h-72 sm:h-80 relative"><canvas id="buyerBarChart"></canvas></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB 5: DATA EXPLORER & CLEARANCE SELECTION -->
+        <div id="view-explorer" class="tab-view hidden space-y-3">
+          <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden flex flex-col">
+            <!-- Action Toolbar -->
+            <div class="p-3 bg-slate-50 border-b border-slate-100 flex flex-wrap items-center justify-between gap-2 text-xs">
+              <div class="flex items-center gap-2">
+                <span class="text-slate-500">รวม <strong id="tableFilteredCount" class="text-slate-800">0</strong> รายการ</span>
+                <span class="px-2 py-0.5 bg-rose-50 text-rose-700 font-semibold rounded-full border border-rose-200">
+                  เลือก <strong id="tableSelectedCount">0</strong>
+                </span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <button onclick="selectAllCurrentPage()" class="px-2 py-1 bg-white border border-slate-200 hover:bg-slate-100 rounded-lg text-slate-700 text-[11px] font-medium">
+                  เลือกหน้านี้
+                </button>
+                <button onclick="clearAllSelections()" class="px-2 py-1 bg-white border border-slate-200 hover:bg-slate-100 rounded-lg text-slate-700 text-[11px] font-medium">
+                  ล้าง
+                </button>
+              </div>
+            </div>
+
+            <!-- Desktop View: Table Format -->
+            <div class="hidden md:block overflow-x-auto custom-scrollbar max-h-[580px]">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead class="bg-slate-100 text-slate-600 sticky top-0 z-10 border-b border-slate-200">
+                  <tr>
+                    <th class="p-3 text-center w-10">
+                      <input type="checkbox" id="masterCheckbox" class="rounded text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                    </th>
+                    <th class="p-3 cursor-pointer" onclick="sortTable('itemNo')">รหัสสินค้า ⬍</th>
+                    <th class="p-3 min-w-[180px] cursor-pointer" onclick="sortTable('itemDesc')">ชื่อสินค้า ⬍</th>
+                    <th class="p-3 cursor-pointer" onclick="sortTable('deptNo')">Dept ⬍</th>
+                    <th class="p-3 cursor-pointer" onclick="sortTable('classNo')">Class No ⬍</th>
+                    <th class="p-3 cursor-pointer" onclick="sortTable('classDesc')">Class Desc ⬍</th>
+                    <th class="p-3 cursor-pointer" onclick="sortTable('agingStatus')">สถานะ ⬍</th>
+                    <th class="p-3 text-right cursor-pointer" onclick="sortTable('stockQty')">คงเหลือ ⬍</th>
+                    <th class="p-3 text-right cursor-pointer text-rose-700 font-semibold" onclick="sortTable('buyPrice')">WAC ⬍</th>
+                    <th class="p-3 text-right cursor-pointer text-indigo-700 font-semibold" onclick="sortTable('sellPrice')">ราคาขาย ⬍</th>
+                    <th class="p-3 text-right cursor-pointer text-emerald-700 font-semibold" onclick="sortTable('discountPct')">% ลด ⬍</th>
+                    <th class="p-3 text-center">ดูข้อมูล</th>
+                  </tr>
+                </thead>
+                <tbody id="mainTableBody" class="divide-y divide-slate-100"></tbody>
+              </table>
+            </div>
+
+            <!-- Mobile View: Clean Card Layout -->
+            <div id="mobileCardContainer" class="md:hidden divide-y divide-slate-100 p-2 space-y-2">
+              <!-- Dynamically Populated by JavaScript -->
+            </div>
+
+            <!-- Pagination -->
+            <div class="p-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs">
+              <button id="btnPrevPage" class="px-2.5 py-1 bg-white border border-slate-200 rounded-lg text-slate-600 disabled:opacity-40">ก่อนหน้า</button>
+              <span id="pageIndicatorText" class="font-medium text-slate-600 text-[11px]">หน้า 1 / 1</span>
+              <button id="btnNextPage" class="px-2.5 py-1 bg-white border border-slate-200 rounded-lg text-slate-600 disabled:opacity-40">ถัดไป</button>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- FLOATING ACTION BAR FOR MOBILE & DESKTOP -->
+  <div id="floatingActionBar" class="fixed bottom-14 md:bottom-6 left-1/2 transform -translate-x-1/2 bg-slate-900/95 backdrop-blur-md text-white px-4 py-2.5 rounded-2xl shadow-2xl z-40 flex items-center gap-3 transition-all duration-300 hidden w-[90%] sm:w-auto justify-between sm:justify-center">
+    <div class="flex items-center gap-2">
+      <span class="p-1.5 bg-rose-600 rounded-lg"><i data-lucide="tag" class="w-3.5 h-3.5"></i></span>
+      <span class="text-xs font-medium">เลือก <strong id="floatingSelectedCount" class="text-rose-400">0</strong> ป้าย</span>
+    </div>
+    <button onclick="openClearanceModal()" class="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs rounded-xl shadow transition flex items-center gap-1">
+      <i data-lucide="printer" class="w-3.5 h-3.5"></i> พิมพ์ป้าย A4
+    </button>
+  </div>
+
+  <!-- CLEARANCE LABEL MAKER MODAL & PRINT PREVIEW -->
+  <div id="clearanceModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-md z-50 flex items-center justify-center hidden p-2 sm:p-4">
+    <div class="bg-white w-full max-w-6xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[96vh]">
+      <!-- Header -->
+      <div class="bg-red-700 text-white p-3.5 sm:p-5 flex justify-between items-center shadow-md">
+        <div class="flex items-center gap-2.5">
+          <div class="p-1.5 bg-white/20 rounded-xl"><i data-lucide="printer" class="w-4 h-4 sm:w-5 sm:h-5"></i></div>
+          <div>
+            <h3 class="text-sm sm:text-base font-bold tracking-tight">แบบพิมพ์ป้าย Clearance Sale (A4 4 ช่อง)</h3>
+            <p class="text-[10px] sm:text-xs text-red-100">ราคาปกติ (WAC) ➔ ราคาขาย พร้อม % ลด</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <button onclick="window.print()" class="px-3 py-1.5 bg-white text-red-700 hover:bg-red-50 font-bold text-xs rounded-xl shadow transition flex items-center gap-1">
+            <i data-lucide="printer" class="w-3.5 h-3.5"></i> สั่งพิมพ์ A4
+          </button>
+          <button onclick="closeClearanceModal()" class="p-1.5 text-white/80 hover:text-white rounded-lg hover:bg-white/10"><i data-lucide="x" class="w-5 h-5"></i></button>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="p-3 bg-red-50/50 border-b border-red-100 flex flex-wrap items-center justify-between gap-2 text-xs">
+        <div class="flex items-center flex-wrap gap-2">
+          <label class="font-bold text-slate-700 text-[11px]">ช่วงเวลาโปรโมชัน:</label>
+          <input type="text" id="promoDateText" value="พิเศษ : 28 ก.ค. - 4 ส.ค. 2569" 
+                 class="px-2.5 py-1 bg-white border border-slate-300 rounded-lg text-slate-800 text-xs w-48 focus:ring-2 focus:ring-red-500 font-medium">
+          <button onclick="applyPromoDateToAll()" class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-white text-[11px] font-medium rounded-lg">ใช้ทุกป้าย</button>
+        </div>
+        <div class="text-slate-600 text-xs font-medium">
+          รวม: <strong id="clearanceTotalTags" class="text-red-600 font-bold">0</strong> ป้าย (<strong id="clearanceTotalSheets" class="text-slate-800">0</strong> แผ่น A4)
+        </div>
+      </div>
+
+      <!-- Preview Area -->
+      <div class="p-3 sm:p-4 overflow-y-auto custom-scrollbar flex-1 bg-slate-200 space-y-4" id="previewContainer"></div>
+    </div>
+  </div>
+
+  <!-- HIDDEN PRINT CONTAINER (FOR HARDWARE A4 PRINTING ONLY) -->
+  <div id="printContainer" class="hidden"></div>
+
+  <!-- ITEM 360° DETAILS MODAL -->
+  <div id="itemDetailModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4">
+    <div class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+      <div class="bg-slate-900 text-white p-4 sm:p-5 flex justify-between items-start">
+        <div>
+          <div class="flex flex-wrap items-center gap-1.5">
+            <span id="modalDeptBadge" class="px-2 py-0.5 bg-indigo-500/30 text-indigo-300 border border-indigo-400/40 rounded-md text-[10px] font-semibold">Dept</span>
+            <span id="modalClassBadge" class="px-2 py-0.5 bg-teal-500/30 text-teal-300 border border-teal-400/40 rounded-md text-[10px] font-semibold">Class</span>
+            <span id="modalStatusBadge" class="px-2 py-0.5 rounded-md text-[10px] font-semibold">Normal</span>
+          </div>
+          <h3 id="modalItemDesc" class="text-sm sm:text-base font-bold mt-1 text-slate-100">ชื่อสินค้า</h3>
+          <p id="modalItemNo" class="text-xs text-slate-400 font-mono mt-0.5">SKU: -</p>
+        </div>
+        <button onclick="closeModal()" class="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+      <div class="p-4 sm:p-6 overflow-y-auto custom-scrollbar space-y-4 text-xs">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 bg-slate-50 p-3 rounded-2xl border">
+          <div><span class="text-slate-400 block text-[10px]">ซัพพลายเออร์</span><strong id="modalSupplier">-</strong></div>
+          <div><span class="text-slate-400 block text-[10px]">ผู้จัดซื้อ (Buyer)</span><strong id="modalBuyer">-</strong></div>
+          <div><span class="text-slate-400 block text-[10px]">Own Brand</span><strong id="modalBrand">-</strong></div>
+          <div><span class="text-slate-400 block text-[10px]">หน่วยนับ</span><strong id="modalUom">-</strong></div>
+        </div>
+        <div>
+          <h5 class="font-bold text-slate-700 uppercase mb-1.5 text-[11px]">ข้อมูลสต็อกและมูลค่า</h5>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <div class="p-2.5 bg-indigo-50 rounded-xl"><span class="block text-[10px]">จำนวนคงเหลือ</span><strong id="modalStockQty">0</strong></div>
+            <div class="p-2.5 bg-blue-50 rounded-xl"><span class="block text-[10px]">ราคาทุน WAC</span><strong id="modalWac">฿0</strong></div>
+            <div class="p-2.5 bg-slate-50 rounded-xl"><span class="block text-[10px]">ราคาขายปลีก</span><strong id="modalSelling">฿0</strong></div>
+            <div class="p-2.5 bg-emerald-50 rounded-xl"><span class="block text-[10px]">มูลค่ารวม</span><strong id="modalGrandTotal">฿0</strong></div>
+          </div>
+        </div>
+        <div>
+          <h5 class="font-bold text-slate-700 uppercase mb-1.5 text-[11px]">การเคลื่อนไหว</h5>
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <div class="p-2.5 bg-slate-50 rounded-xl"><span>รับล่าสุด</span><strong id="modalLastDelivery" class="block mt-0.5">-</strong></div>
+            <div class="p-2.5 bg-slate-50 rounded-xl"><span>ขายล่าสุด</span><strong id="modalLastSold" class="block mt-0.5">-</strong></div>
+            <div class="p-2.5 bg-slate-50 rounded-xl"><span>อายุ Aging</span><strong id="modalAgingDays" class="block mt-0.5 text-amber-600">0 วัน</strong></div>
+            <div class="p-2.5 bg-slate-50 rounded-xl"><span>ไม่เคลื่อนไหว NBS</span><strong id="modalNbsDays" class="block mt-0.5 text-rose-600">0 วัน</strong></div>
+          </div>
+        </div>
+        <div class="bg-rose-50/40 p-3 rounded-2xl border border-rose-100">
+          <h5 class="font-bold text-rose-800 mb-1.5 text-[11px]">การตั้งสำรองสุทธิ</h5>
+          <div class="grid grid-cols-3 gap-2">
+            <div><span>สำรอง Aging</span><strong id="modalAgingProv" class="block text-amber-700">฿0</strong></div>
+            <div><span>สำรอง NBS</span><strong id="modalNbsProv" class="block text-rose-700">฿0</strong></div>
+            <div><span>สำรองสุทธิ</span><strong id="modalTotalProv" class="block text-purple-800">฿0</strong></div>
+          </div>
+        </div>
+      </div>
+      <div class="p-3 bg-slate-50 border-t flex justify-end">
+        <button onclick="closeModal()" class="px-4 py-1.5 bg-slate-800 text-white rounded-xl text-xs font-semibold">ปิด</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const FIXED_SHEET_ID = '1vRYuBfH-IOOYsJjkxNl3bgo2K7dKDz3EHt2lDCcBI2w';
+
+    let rawItems = [];
+    let filteredItems = [];
+    let selectedItemIds = new Set();
+    let clearanceItemsData = {};
+    
+    let currentPage = 1;
+    let itemsPerPage = 15;
+    let sortColumn = 'grandTotal';
+    let sortDirection = 'desc';
+    let currentTab = 'overview';
+
+    let overviewPieChart = null, overviewDeptBarChart = null, agingTierChart = null, agingProvisionBreakdownChart = null, nbsProvisionChart = null, supplierBarChart = null, buyerBarChart = null;
+
+    const formatCurrency = (val) => '฿' + Number(val || 0).toLocaleString('th-TH', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    const formatNumber = (val) => Number(val || 0).toLocaleString('th-TH');
+
+    const AGING_STATUS_MAP = {
+      'NORMAL': { label: 'Normal (ปกติ)', short: 'Normal', color: 'bg-emerald-50 text-emerald-700 border-emerald-200' },
+      'AL': { label: 'AL - Alert (เฝ้าระวัง)', short: 'Alert', color: 'bg-blue-50 text-blue-700 border-blue-200' },
+      'AT': { label: 'AT - Attention (ติดตาม)', short: 'Attention', color: 'bg-amber-50 text-amber-700 border-amber-200' },
+      'CR': { label: 'CR - Critical (วิกฤต 25%)', short: 'Critical', color: 'bg-orange-50 text-orange-700 border-orange-200' },
+      'OB': { label: 'OB - Obsolete (เสื่อมสภาพ)', short: 'Obsolete', color: 'bg-rose-50 text-rose-700 border-rose-200' },
+      'FP': { label: 'FP - Full Provision (สำรอง 100%)', short: 'Full Prov', color: 'bg-purple-50 text-purple-700 border-purple-200' }
+    };
+
+    function getStatusBadge(code) {
+      const info = AGING_STATUS_MAP[code] || { short: code, color: 'bg-slate-100 text-slate-600' };
+      return `<span class="px-2 py-0.5 rounded text-[10px] font-semibold border ${info.color}">${info.short}</span>`;
+    }
+
+    function refreshIcons() { if (window.lucide) lucide.createIcons(); }
+
+    function showLoading(show, title = 'กำลังประมวลผล...', desc = 'กรุณารอสักครู่') {
+      document.getElementById('loadingTitle').innerText = title;
+      document.getElementById('loadingDesc').innerText = desc;
+      document.getElementById('loadingOverlay').classList.toggle('hidden', !show);
+    }
+
+    function toggleMobileFilters() {
+      document.getElementById('filterSection').classList.toggle('hidden');
+    }
+
+    function switchTab(tabId) {
+      currentTab = tabId;
+      document.querySelectorAll('.tab-view').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.mobile-nav-btn').forEach(el => el.classList.remove('active'));
+      
+      const targetView = document.getElementById('view-' + tabId);
+      const targetBtn = document.getElementById('tab-' + tabId);
+      const targetMobBtn = document.getElementById('mob-tab-' + tabId);
+
+      if (targetView) targetView.classList.remove('hidden');
+      if (targetBtn) targetBtn.classList.add('active');
+      if (targetMobBtn) targetMobBtn.classList.add('active');
+      
+      setTimeout(() => { renderVisibleTabCharts(); }, 30);
+    }
+
+    function isSummaryRow(row) {
+      const agingGrp = String(row['Aging Group'] || '').trim().toLowerCase();
+      const itemNo = row['Item No'];
+      return agingGrp.startsWith('sum') || agingGrp.includes('grand total') || !itemNo || String(itemNo).trim() === '';
+    }
+
+    function cleanRow(row) {
+      const deptNo = row['Department No'] !== undefined && row['Department No'] !== null ? String(row['Department No']).replace('.0', '') : 'N/A';
+      const rawStatus = row['Aging Status'] ? String(row['Aging Status']).trim().toUpperCase() : 'NORMAL';
+      const sellPrice = Number(row['Selling Price'] || 0);
+      const buyPrice = Number(row['Buy Price (WAC)'] || 0);
+      const discountPct = buyPrice > 0 ? Math.round(((buyPrice - sellPrice) / buyPrice) * 100) : 0;
+      
+      const classNo = row['Class No'] !== undefined && row['Class No'] !== null ? String(row['Class No']).replace('.0', '') : '';
+      const classDesc = row['Class Desc'] || row['Class Name'] || 'Other';
+      
+      return {
+        itemNo: row['Item No'] ? String(row['Item No']).replace('.0', '') : '-',
+        itemDesc: row['Item Desc'] || 'ไม่ระบุชื่อสินค้า',
+        classNo: classNo,
+        classDesc: classDesc,
+        subclassDesc: row['Subclass Desc'] || classDesc,
+        deptNo: deptNo,
+        department: row['Department Desc'] || 'Other',
+        agingStatus: rawStatus,
+        buyer: row['Buyer Name'] || row['Buyer'] || 'Unknown',
+        supplierNo: row['Supplier No'] || '-',
+        supplier: row['Supplier Desc'] || 'ไม่ระบุผู้ผลิต',
+        uom: row['UOM'] || 'EA',
+        ownBrand: row['Own Brand'] === 'Y' ? 'Own Brand (Y)' : 'Commercial (N)',
+        isOwnBrand: row['Own Brand'] === 'Y',
+        lastDelivery: row['Last Delivery Date'] || '-',
+        lastSold: row['Last Sold Date'] || '-',
+        stockQty: Number(row['Stock Qty'] || 0),
+        agingDays: Number(row['No of Aging Days'] || 0),
+        nbsDays: Number(row['No of NBS Days'] || 0),
+        sellPrice: sellPrice,
+        buyPrice: buyPrice,
+        discountPct: discountPct,
+        grandTotal: Number(row['Grand Total'] || 0),
+        normalAging: Number(row['Normal (Aging)'] || 0),
+        alert: Number(row['Alert'] || 0),
+        attention: Number(row['Attention'] || 0),
+        critical: Number(row['Critical'] || 0),
+        obsolete: Number(row['Obsolete'] || 0),
+        agingProv25: Number(row['Aging Provision Critical 25%'] || 0),
+        agingProv50: Number(row['Aging Provision Obsolete 50%'] || 0),
+        agingProv100: Number(row['Aging Provision 100%'] || 0),
+        agingProvision: Number(row['Total Aging Provision'] || 0),
+        nbs60: Number(row['NBS Stock  > 60 Days'] || 0),
+        nbs90: Number(row['NBS Stock > 90 Days'] || 0),
+        stockOver180: Number(row['Stock Over 180 Days'] || 0),
+        nbsProv25: Number(row['NBS Provision 25%'] || 0),
+        nbsProv50: Number(row['NBS Provision 50%'] || 0),
+        nbsProv75: Number(row['NBS Provision 75%'] || 0),
+        nbsProv100: Number(row['NBS Provision 100%'] || 0),
+        nbsProvision: Number(row['Total NBS Provision'] || 0),
+        totalProvision: Number(row['Total Provision Net Aging and NBS'] || (Number(row['Total Aging Provision'] || 0) + Number(row['Total NBS Provision'] || 0)))
+      };
+    }
+
+    function populateDropdowns(data) {
+      const deptSelect = document.getElementById('filterDept');
+      const statusSelect = document.getElementById('filterAgingStatus');
+
+      const deptMap = {};
+      data.forEach(d => {
+        if (d.deptNo && !deptMap[d.deptNo]) deptMap[d.deptNo] = d.department;
+      });
+      deptSelect.innerHTML = '<option value="">ทุกรหัสแผนก (Dept No)</option>' + Object.entries(deptMap).map(([no, desc]) => `<option value="${no}">Dept ${no} - ${desc}</option>`).join('');
+
+      updateClassDropdown(data);
+
+      const presentStatuses = [...new Set(data.map(d => d.agingStatus))];
+      statusSelect.innerHTML = '<option value="">ทุกสถานะ Aging</option>' + 
+        presentStatuses.map(status => {
+          const info = AGING_STATUS_MAP[status] || { label: status };
+          return `<option value="${status}">${info.label}</option>`;
+        }).join('');
+    }
+
+    function updateClassDropdown(data, targetDept = '') {
+      const classSelect = document.getElementById('filterClass');
+      const currentSelected = classSelect.value;
+
+      const source = targetDept ? data.filter(d => d.deptNo === targetDept) : data;
+      const classMap = {};
+      source.forEach(d => {
+        const key = d.classNo ? `${d.classNo} - ${d.classDesc}` : d.classDesc;
+        if (key && !classMap[key]) classMap[key] = { no: d.classNo, desc: d.classDesc };
+      });
+
+      classSelect.innerHTML = '<option value="">ทุกหมวด (Class No / Desc)</option>' + 
+        Object.keys(classMap).sort().map(k => `<option value="${k}">${k}</option>`).join('');
+
+      if (Object.keys(classMap).includes(currentSelected)) {
+        classSelect.value = currentSelected;
+      }
+    }
+
+    function applyFilters() {
+      const query = document.getElementById('globalSearch').value.trim().toLowerCase();
+      const selectedDept = document.getElementById('filterDept').value;
+      const selectedClass = document.getElementById('filterClass').value;
+      const selectedStatus = document.getElementById('filterAgingStatus').value;
+      const selectedRisk = document.getElementById('filterRisk').value;
+
+      filteredItems = rawItems.filter(item => {
+        const itemClassKey = item.classNo ? `${item.classNo} - ${item.classDesc}` : item.classDesc;
+
+        const matchSearch = !query || 
+          item.itemNo.toLowerCase().includes(query) || 
+          item.itemDesc.toLowerCase().includes(query) || 
+          item.supplier.toLowerCase().includes(query) || 
+          item.buyer.toLowerCase().includes(query) || 
+          item.deptNo.toLowerCase().includes(query) ||
+          item.classNo.toLowerCase().includes(query) ||
+          item.classDesc.toLowerCase().includes(query);
+
+        const matchDept = !selectedDept || item.deptNo === selectedDept;
+        const matchClass = !selectedClass || itemClassKey === selectedClass;
+        const matchStatus = !selectedStatus || item.agingStatus === selectedStatus;
+
+        let matchRisk = true;
+        if (selectedRisk === 'provision') matchRisk = item.totalProvision > 0;
+        else if (selectedRisk === 'nbs90') matchRisk = item.nbsDays >= 90;
+        else if (selectedRisk === 'ownBrand') matchRisk = item.isOwnBrand;
+
+        return matchSearch && matchDept && matchClass && matchStatus && matchRisk;
+      });
+      currentPage = 1;
+      updateUI();
+    }
+
+    function updateKPIs() {
+      const totalVal = filteredItems.reduce((acc, r) => acc + r.grandTotal, 0);
+      const totalSku = filteredItems.length;
+      const agingProv = filteredItems.reduce((acc, r) => acc + r.agingProvision, 0);
+      const nbsProv = filteredItems.reduce((acc, r) => acc + r.nbsProvision, 0);
+      const normalVal = filteredItems.reduce((acc, r) => acc + r.normalAging, 0);
+
+      document.getElementById('kpiTotalValue').innerText = formatCurrency(totalVal);
+      document.getElementById('kpiTotalSku').innerText = formatNumber(totalSku);
+      document.getElementById('kpiAgingProv').innerText = formatCurrency(agingProv);
+      document.getElementById('kpiNbsProv').innerText = formatCurrency(nbsProv);
+      document.getElementById('kpiNormalStock').innerText = formatCurrency(normalVal);
+
+      const agingPct = totalVal > 0 ? ((agingProv / totalVal) * 100).toFixed(1) : 0;
+      const nbsPct = totalVal > 0 ? ((nbsProv / totalVal) * 100).toFixed(1) : 0;
+      const normPct = totalVal > 0 ? ((normalVal / totalVal) * 100).toFixed(1) : 0;
+
+      document.getElementById('kpiAgingProvRatio').innerText = `${agingPct}% ของรวม`;
+      document.getElementById('kpiNbsProvRatio').innerText = `${nbsPct}% ของรวม`;
+      document.getElementById('kpiNormalRatio').innerText = `${normPct}% ของรวม`;
+
+      document.getElementById('agingBucketNormal').innerText = formatCurrency(normalVal);
+      document.getElementById('agingBucketAlert').innerText = formatCurrency(filteredItems.reduce((a, r) => a + r.alert, 0));
+      document.getElementById('agingBucketAttention').innerText = formatCurrency(filteredItems.reduce((a, r) => a + r.attention, 0));
+      document.getElementById('agingBucketCritical').innerText = formatCurrency(filteredItems.reduce((a, r) => a + r.critical, 0));
+      document.getElementById('agingBucketObsolete').innerText = formatCurrency(filteredItems.reduce((a, r) => a + r.obsolete, 0));
+
+      document.getElementById('nbsVal60').innerText = formatCurrency(filteredItems.reduce((a, r) => a + r.nbs60, 0));
+      document.getElementById('nbsVal90').innerText = formatCurrency(filteredItems.reduce((a, r) => a + r.nbs90, 0));
+      document.getElementById('nbsVal180').innerText = formatCurrency(filteredItems.reduce((a, r) => a + r.stockOver180, 0));
+    }
+
+    function renderVisibleTabCharts() {
+      if (currentTab === 'overview') {
+        const deptTotals = {}; filteredItems.forEach(r => { deptTotals[r.deptNo] = (deptTotals[r.deptNo] || 0) + r.grandTotal; });
+        const sortedDeptList = Object.entries(deptTotals).sort((a, b) => b[1] - a[1]);
+        const top5Depts = sortedDeptList.slice(0, 5); const otherDeptSum = sortedDeptList.slice(5).reduce((sum, d) => sum + d[1], 0);
+
+        const pieLabels = top5Depts.map(d => 'Dept ' + d[0]); const pieData = top5Depts.map(d => d[1]);
+        if (otherDeptSum > 0) { pieLabels.push('อื่นๆ'); pieData.push(otherDeptSum); }
+
+        if (overviewPieChart) overviewPieChart.destroy();
+        const ctxPie = document.getElementById('overviewPieChart')?.getContext('2d');
+        if (ctxPie) {
+          overviewPieChart = new Chart(ctxPie, {
+            type: 'doughnut',
+            data: { labels: pieLabels, datasets: [{ data: pieData, backgroundColor: ['#4f46e5', '#06b6d4', '#f59e0b', '#ec4899', '#10b981', '#94a3b8'] }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { family: 'Prompt', size: 10 } } } } }
+          });
+        }
+
+        const top8Depts = sortedDeptList.slice(0, 8);
+        if (overviewDeptBarChart) overviewDeptBarChart.destroy();
+        const ctxDeptBar = document.getElementById('overviewDeptBarChart')?.getContext('2d');
+        if (ctxDeptBar) {
+          overviewDeptBarChart = new Chart(ctxDeptBar, {
+            type: 'bar',
+            data: {
+              labels: top8Depts.map(d => 'D' + d[0]),
+              datasets: [
+                { label: 'สต็อกรวม', data: top8Depts.map(d => d[1]), backgroundColor: '#4f46e5', borderRadius: 4 },
+                { label: 'สำรอง Aging', data: top8Depts.map(d => filteredItems.filter(r => r.deptNo === d[0]).reduce((sum, r) => sum + r.agingProvision, 0)), backgroundColor: '#f59e0b', borderRadius: 4 },
+                { label: 'สำรอง NBS', data: top8Depts.map(d => filteredItems.filter(r => r.deptNo === d[0]).reduce((sum, r) => sum + r.nbsProvision, 0)), backgroundColor: '#f43f5e', borderRadius: 4 }
+              ]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top', labels: { boxWidth: 10, font: { family: 'Prompt', size: 9 } } } } }
+          });
+        }
+      } else if (currentTab === 'aging') {
+        if (agingTierChart) agingTierChart.destroy();
+        const ctxTier = document.getElementById('agingTierChart')?.getContext('2d');
+        if (ctxTier) {
+          agingTierChart = new Chart(ctxTier, {
+            type: 'bar',
+            data: {
+              labels: ['Normal', 'Alert', 'Attention', 'Critical', 'Obsolete'],
+              datasets: [{ data: [filteredItems.reduce((a, r) => a + r.normalAging, 0), filteredItems.reduce((a, r) => a + r.alert, 0), filteredItems.reduce((a, r) => a + r.attention, 0), filteredItems.reduce((a, r) => a + r.critical, 0), filteredItems.reduce((a, r) => a + r.obsolete, 0)], backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#f97316', '#ef4444'], borderRadius: 6 }]
+            },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+          });
+        }
+
+        if (agingProvisionBreakdownChart) agingProvisionBreakdownChart.destroy();
+        const ctxProv = document.getElementById('agingProvisionBreakdownChart')?.getContext('2d');
+        if (ctxProv) {
+          agingProvisionBreakdownChart = new Chart(ctxProv, {
+            type: 'doughnut',
+            data: { labels: ['Critical (25%)', 'Obsolete (50%)', 'Obsolete (100%)'], datasets: [{ data: [filteredItems.reduce((a, r) => a + r.agingProv25, 0), filteredItems.reduce((a, r) => a + r.agingProv50, 0), filteredItems.reduce((a, r) => a + r.agingProv100, 0)], backgroundColor: ['#f97316', '#f43f5e', '#881337'] }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { family: 'Prompt', size: 10 } } } } }
+          });
+        }
+      } else if (currentTab === 'nbs') {
+        if (nbsProvisionChart) nbsProvisionChart.destroy();
+        const ctxNbs = document.getElementById('nbsProvisionChart')?.getContext('2d');
+        if (ctxNbs) {
+          nbsProvisionChart = new Chart(ctxNbs, {
+            type: 'bar',
+            data: { labels: ['25%', '50%', '75%', '100%'], datasets: [{ data: [filteredItems.reduce((a, r) => a + r.nbsProv25, 0), filteredItems.reduce((a, r) => a + r.nbsProv50, 0), filteredItems.reduce((a, r) => a + r.nbsProv75, 0), filteredItems.reduce((a, r) => a + r.nbsProv100, 0)], backgroundColor: '#e11d48', borderRadius: 6 }] },
+            options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+          });
+        }
+      } else if (currentTab === 'suppliers') {
+        const supTotals = {}; filteredItems.forEach(r => { supTotals[r.supplier] = (supTotals[r.supplier] || 0) + r.grandTotal; });
+        const topSups = Object.entries(supTotals).sort((a, b) => b[1] - a[1]).slice(0, 8);
+        if (supplierBarChart) supplierBarChart.destroy();
+        const ctxSup = document.getElementById('supplierBarChart')?.getContext('2d');
+        if (ctxSup) {
+          supplierBarChart = new Chart(ctxSup, { type: 'bar', indexAxis: 'y', data: { labels: topSups.map(s => s[0].slice(0, 12)), datasets: [{ data: topSups.map(s => s[1]), backgroundColor: '#6366f1', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
+        }
+
+        const buyerTotals = {}; filteredItems.forEach(r => { buyerTotals[r.buyer] = (buyerTotals[r.buyer] || 0) + r.grandTotal; });
+        const topBuyers = Object.entries(buyerTotals).sort((a, b) => b[1] - a[1]).slice(0, 8);
+        if (buyerBarChart) buyerBarChart.destroy();
+        const ctxBuyer = document.getElementById('buyerBarChart')?.getContext('2d');
+        if (ctxBuyer) {
+          buyerBarChart = new Chart(ctxBuyer, { type: 'bar', indexAxis: 'y', data: { labels: topBuyers.map(b => b[0].slice(0, 12)), datasets: [{ data: topBuyers.map(b => b[1]), backgroundColor: '#0ea5e9', borderRadius: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } } });
+        }
+      }
+    }
+
+    // Selection
+    function toggleItemSelection(itemNo) {
+      if (selectedItemIds.has(itemNo)) {
+        selectedItemIds.delete(itemNo);
+      } else {
+        selectedItemIds.add(itemNo);
+        if (!clearanceItemsData[itemNo]) {
+          const item = rawItems.find(r => r.itemNo === itemNo);
+          clearanceItemsData[itemNo] = {
+            originalWac: item ? item.buyPrice : 0,
+            currentSellPrice: item ? item.sellPrice : 0,
+            promoText: document.getElementById('promoDateText').value
+          };
+        }
+      }
+      updateSelectionUI();
+    }
+
+    function selectAllCurrentPage() {
+      const totalPages = Math.ceil(filteredItems.length / itemsPerPage) || 1;
+      const startIdx = (currentPage - 1) * itemsPerPage;
+      const pageItems = filteredItems.slice(startIdx, startIdx + itemsPerPage);
+      
+      pageItems.forEach(item => {
+        selectedItemIds.add(item.itemNo);
+        if (!clearanceItemsData[item.itemNo]) {
+          clearanceItemsData[item.itemNo] = {
+            originalWac: item.buyPrice,
+            currentSellPrice: item.sellPrice,
+            promoText: document.getElementById('promoDateText').value
+          };
+        }
+      });
+      updateSelectionUI();
+      renderTable();
+    }
+
+    function clearAllSelections() {
+      selectedItemIds.clear();
+      updateSelectionUI();
+      renderTable();
+    }
+
+    function updateSelectionUI() {
+      const count = selectedItemIds.size;
+      document.getElementById('selectedCountHeader').innerText = count;
+      document.getElementById('tableSelectedCount').innerText = count;
+      document.getElementById('floatingSelectedCount').innerText = count;
+
+      const bar = document.getElementById('floatingActionBar');
+      if (count > 0) {
+        bar.classList.remove('hidden');
+      } else {
+        bar.classList.add('hidden');
+      }
+    }
+
+    function sortTable(column) {
+      if (sortColumn === column) { sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'; } else { sortColumn = column; sortDirection = 'desc'; }
+      filteredItems.sort((a, b) => {
+        let valA = a[column]; let valB = b[column];
+        if (typeof valA === 'string') return sortDirection === 'asc' ? valA.localeCompare(valB) : valB.localeCompare(valA);
+        return sortDirection === 'asc' ? valA - valB : valB - valA;
+      });
+      renderTable();
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('mainTableBody');
+      const mobileContainer = document.getElementById('mobileCardContainer');
+      const totalPages = Math.ceil(filteredItems.length / itemsPerPage) || 1;
+      currentPage = Math.max(1, Math.min(currentPage, totalPages));
+      const startIdx = (currentPage - 1) * itemsPerPage;
+      const pageItems = filteredItems.slice(startIdx, startIdx + itemsPerPage);
+
+      if (pageItems.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="12" class="p-8 text-center text-slate-400">ไม่พบรายการข้อมูล</td></tr>`;
+        mobileContainer.innerHTML = `<div class="p-8 text-center text-slate-400">ไม่พบรายการข้อมูล</div>`;
+      } else {
+        // Render Desktop Table
+        tbody.innerHTML = pageItems.map(item => {
+          const isChecked = selectedItemIds.has(item.itemNo);
+          const pctColor = item.discountPct > 0 ? 'bg-amber-100 text-amber-800 font-bold' : 'bg-slate-100 text-slate-500';
+          return `
+            <tr class="hover:bg-slate-50 border-b border-slate-100 ${isChecked ? 'bg-rose-50/40' : ''}">
+              <td class="p-3 text-center">
+                <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleItemSelection('${item.itemNo}')" 
+                       class="rounded text-rose-600 focus:ring-rose-500 cursor-pointer w-4 h-4">
+              </td>
+              <td class="p-3 font-mono text-slate-700 font-semibold">${item.itemNo}</td>
+              <td class="p-3 font-medium max-w-[180px] truncate" title="${item.itemDesc}">${item.itemDesc}</td>
+              <td class="p-3"><span class="px-2 py-0.5 bg-slate-100 text-indigo-700 font-semibold rounded text-[11px]">Dept ${item.deptNo}</span></td>
+              <td class="p-3 font-mono text-teal-800 font-medium">${item.classNo || '-'}</td>
+              <td class="p-3 max-w-[140px] truncate text-slate-600 font-medium" title="${item.classDesc}">${item.classDesc}</td>
+              <td class="p-3">${getStatusBadge(item.agingStatus)}</td>
+              <td class="p-3 text-right font-medium">${formatNumber(item.stockQty)}</td>
+              <td class="p-3 text-right font-semibold text-rose-700">${formatCurrency(item.buyPrice)}</td>
+              <td class="p-3 text-right font-bold text-indigo-700 text-sm">${formatCurrency(item.sellPrice)}</td>
+              <td class="p-3 text-right">
+                <span class="px-2 py-0.5 rounded text-[11px] ${pctColor}">
+                  ${item.discountPct > 0 ? `-${item.discountPct}%` : '0%'}
+                </span>
+              </td>
+              <td class="p-3 text-center">
+                <button onclick="openModal('${item.itemNo}')" class="px-2.5 py-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-semibold rounded-lg text-[11px] transition">360°</button>
+              </td>
+            </tr>`;
+        }).join('');
+
+        // Render Mobile Card List
+        mobileContainer.innerHTML = pageItems.map(item => {
+          const isChecked = selectedItemIds.has(item.itemNo);
+          return `
+            <div class="bg-white p-3 rounded-2xl border ${isChecked ? 'border-rose-400 bg-rose-50/20' : 'border-slate-200'} shadow-sm space-y-2">
+              <div class="flex items-start justify-between gap-2">
+                <div class="flex items-start gap-2">
+                  <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleItemSelection('${item.itemNo}')" 
+                         class="rounded text-rose-600 focus:ring-rose-500 cursor-pointer w-4 h-4 mt-0.5">
+                  <div>
+                    <span class="font-mono text-xs font-bold text-slate-900">${item.itemNo}</span>
+                    <h5 class="text-xs font-semibold text-slate-800 line-clamp-1">${item.itemDesc}</h5>
+                  </div>
+                </div>
+                <div>${getStatusBadge(item.agingStatus)}</div>
+              </div>
+
+              <div class="flex flex-wrap items-center gap-1.5 text-[10px]">
+                <span class="px-1.5 py-0.5 bg-indigo-50 text-indigo-700 rounded font-medium">Dept ${item.deptNo}</span>
+                <span class="px-1.5 py-0.5 bg-teal-50 text-teal-700 rounded font-medium">${item.classNo ? `Class ${item.classNo}` : ''} ${item.classDesc}</span>
+                <span class="px-1.5 py-0.5 bg-slate-100 text-slate-600 rounded">คงเหลือ: <b>${formatNumber(item.stockQty)}</b></span>
+              </div>
+
+              <div class="flex items-center justify-between pt-1 border-t border-slate-100 text-xs">
+                <div>
+                  <span class="text-[10px] text-slate-400 block">WAC / ราคาขาย</span>
+                  <span class="line-through text-rose-600 text-[11px]">${formatCurrency(item.buyPrice)}</span>
+                  <strong class="text-indigo-700 font-bold ml-1">${formatCurrency(item.sellPrice)}</strong>
+                  ${item.discountPct > 0 ? `<span class="text-[10px] text-amber-700 font-bold ml-0.5">(-${item.discountPct}%)</span>` : ''}
+                </div>
+                <button onclick="openModal('${item.itemNo}')" class="px-3 py-1 bg-indigo-50 text-indigo-700 rounded-lg text-[11px] font-semibold">
+                  ดู 360°
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+
+      document.getElementById('tableFilteredCount').innerText = formatNumber(filteredItems.length);
+      document.getElementById('pageIndicatorText').innerText = `หน้า ${currentPage} / ${totalPages}`;
+      document.getElementById('btnPrevPage').disabled = currentPage === 1;
+      document.getElementById('btnNextPage').disabled = currentPage === totalPages;
+    }
+
+    // Clearance Label Generator
+    function openClearanceModal() {
+      if (selectedItemIds.size === 0) {
+        alert('กรุณาเลือกสินค้าที่ต้องการทำป้ายก่อนครับ');
+        return;
+      }
+      renderClearanceCards();
+      document.getElementById('clearanceModal').classList.remove('hidden');
+      refreshIcons();
+    }
+
+    function closeClearanceModal() {
+      document.getElementById('clearanceModal').classList.add('hidden');
+    }
+
+    function updateLabelPrices(itemNo, field, val) {
+      if (!clearanceItemsData[itemNo]) clearanceItemsData[itemNo] = {};
+      clearanceItemsData[itemNo][field] = Number(val);
+      
+      const conf = clearanceItemsData[itemNo];
+      const orig = conf.originalWac || 0;
+      const current = conf.currentSellPrice || 0;
+      const diff = orig - current;
+      const pct = orig > 0 ? Math.round((diff / orig) * 100) : 0;
+      
+      const diffEl = document.getElementById(`discount-val-${itemNo}`);
+      if (diffEl) diffEl.innerText = diff.toFixed(2);
+      const printDiffEl = document.getElementById(`print-discount-val-${itemNo}`);
+      if (printDiffEl) printDiffEl.innerText = diff.toFixed(2);
+
+      const pctEl = document.getElementById(`discount-pct-${itemNo}`);
+      if (pctEl) pctEl.innerText = pct > 0 ? `${pct}%` : '0%';
+      const printPctEl = document.getElementById(`print-discount-pct-${itemNo}`);
+      if (printPctEl) printPctEl.innerText = pct > 0 ? `${pct}%` : '0%';
+
+      const printPriceEl = document.getElementById(`print-price-${itemNo}`);
+      if (printPriceEl) printPriceEl.innerText = Math.round(current);
+
+      const printOrigEl = document.getElementById(`print-orig-${itemNo}`);
+      if (printOrigEl) printOrigEl.innerText = Math.round(orig);
+    }
+
+    function applyPromoDateToAll() {
+      const text = document.getElementById('promoDateText').value;
+      selectedItemIds.forEach(id => {
+        if (!clearanceItemsData[id]) clearanceItemsData[id] = {};
+        clearanceItemsData[id].promoText = text;
+      });
+      renderClearanceCards();
+    }
+
+    function generateSinglePremiumCard(item, isPrint = false) {
+      const conf = clearanceItemsData[item.itemNo] || {
+        originalWac: item.buyPrice,
+        currentSellPrice: item.sellPrice,
+        promoText: document.getElementById('promoDateText').value
+      };
+      
+      const diff = conf.originalWac - conf.currentSellPrice;
+      const pct = conf.originalWac > 0 ? Math.round((diff / conf.originalWac) * 100) : 0;
+      const promoText = conf.promoText || document.getElementById('promoDateText').value;
+
+      return `
+        <div class="relative w-full h-full makro-ribbed-bg overflow-hidden flex flex-col justify-between select-none box-border p-0 border border-slate-300">
+          <svg class="absolute inset-0 w-full h-full pointer-events-none z-0" viewBox="0 0 500 350" preserveAspectRatio="none">
+            <path d="M 0,0 L 500,0 L 500,312 C 380,312 280,328 175,314 C 55,296 15,220 8,110 C 3,40 0,0 0,0 Z" 
+                  fill="#ffffff" stroke="#c4121a" stroke-width="4.5" stroke-linejoin="round"/>
+          </svg>
+
+          <div class="relative z-10 px-5 pt-3.5 pb-1 flex justify-between items-start">
+            <div class="max-w-[68%] space-y-0.5">
+              <span class="text-xs font-bold text-slate-800 tracking-tight block font-mono">รหัส ${item.itemNo}</span>
+              <h4 class="text-sm sm:text-base font-extrabold text-slate-950 leading-tight line-clamp-1" title="${item.itemDesc}">${item.itemDesc}</h4>
+              <p class="text-[10.5px] text-slate-500 line-clamp-1 font-medium">${item.classNo ? `Class ${item.classNo} - ` : ''}${item.classDesc || item.department}</p>
+            </div>
+
+            <div class="relative flex flex-col items-center">
+              <div class="bg-gradient-to-b from-amber-400 via-orange-500 to-red-600 text-white px-3.5 py-1 rounded-2xl shadow-lg border-2 border-white text-center transform -rotate-1">
+                <span class="text-xs sm:text-sm font-black tracking-wider uppercase block drop-shadow font-sans text-yellow-50" style="font-style: italic;">CLEARANCE</span>
+                <span class="text-[9.5px] sm:text-[10px] font-extrabold tracking-widest uppercase block -mt-1 drop-shadow text-white">SALE</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="relative z-10 px-6 py-0 flex items-center justify-between my-auto">
+            <div class="space-y-1.5 pl-1">
+              <div class="flex items-center gap-2">
+                <div class="relative inline-block">
+                  ${isPrint ? `
+                    <span id="print-orig-${item.itemNo}" class="text-2xl sm:text-3xl font-bold text-red-600 relative inline-block">
+                      ${Math.round(conf.originalWac)}
+                      <span class="absolute left-[-4px] right-[-4px] top-1/2 h-[2.5px] bg-red-600 transform -rotate-12"></span>
+                    </span>
+                  ` : `
+                    <div class="relative flex items-center">
+                      <input type="number" value="${Math.round(conf.originalWac)}" 
+                             onchange="updateLabelPrices('${item.itemNo}', 'originalWac', this.value)"
+                             title="ราคาปกติ (Buy Price WAC)"
+                             class="w-16 text-center text-xl font-bold text-red-600 border border-red-200 bg-red-50/60 rounded px-1 py-0.5 focus:outline-none focus:ring-1 focus:ring-red-500 font-sans">
+                      <span class="absolute left-[-2px] right-[-2px] top-1/2 h-[2px] bg-red-600 transform -rotate-12 pointer-events-none"></span>
+                    </div>
+                  `}
+                </div>
+
+                <div class="bg-gradient-to-r from-amber-400 to-yellow-400 text-red-950 px-2.5 py-0.5 rounded-lg shadow-sm border border-yellow-200 text-center transform -rotate-2">
+                  <span class="text-[10px] sm:text-[11px] font-black uppercase tracking-tight block">
+                    ลด <span id="${isPrint ? 'print-' : ''}discount-pct-${item.itemNo}" class="text-xs sm:text-sm font-black text-red-900">${pct > 0 ? `${pct}%` : '0%'}</span>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="text-right pr-2">
+              ${isPrint ? `
+                <span id="print-price-${item.itemNo}" class="text-6xl sm:text-7xl font-black text-black tracking-tighter leading-none" style="font-family: 'Oswald', 'Prompt', sans-serif;">
+                  ${Math.round(conf.currentSellPrice)}
+                </span>
+              ` : `
+                <div class="flex items-center gap-1 justify-end">
+                  <input type="number" value="${Math.round(conf.currentSellPrice)}" 
+                         onchange="updateLabelPrices('${item.itemNo}', 'currentSellPrice', this.value)"
+                         title="ราคาขายปัจจุบัน (Selling Price)"
+                         class="w-28 text-right text-4xl sm:text-5xl font-black text-black border border-slate-300 bg-white rounded-lg px-2 py-0.5 focus:ring-2 focus:ring-red-500 font-sans">
+                </div>
+              `}
+            </div>
+          </div>
+
+          <div class="relative z-10 px-5 pb-2.5 flex justify-between items-end">
+            <div class="pl-1 pb-0.5">
+              <span class="text-white font-black text-xl sm:text-2xl tracking-tighter lowercase font-sans drop-shadow-md select-none">makro</span>
+            </div>
+
+            <div class="text-right space-y-0.5">
+              <p class="text-xs sm:text-sm font-bold text-slate-900 leading-none">
+                ถูกลง <span id="${isPrint ? 'print-' : ''}discount-val-${item.itemNo}" class="text-sm sm:text-base font-black text-slate-950 font-mono">${diff.toFixed(2)}</span>
+              </p>
+              <p class="text-[9.5px] sm:text-[10.5px] font-medium text-slate-700 leading-tight">
+                ${promoText}
+              </p>
+            </div>
+          </div>
+
+        </div>
+      `;
+    }
+
+    function renderClearanceCards() {
+      const previewContainer = document.getElementById('previewContainer');
+      const printContainer = document.getElementById('printContainer');
+
+      const items = Array.from(selectedItemIds).map(id => rawItems.find(r => r.itemNo === id)).filter(Boolean);
+      const totalCards = items.length;
+      const totalSheets = Math.ceil(totalCards / 4) || 1;
+
+      document.getElementById('clearanceTotalTags').innerText = totalCards;
+      document.getElementById('clearanceTotalSheets').innerText = totalSheets;
+
+      let previewHTML = '';
+      let printHTML = '';
+
+      for (let i = 0; i < items.length; i += 4) {
+        const sheetItems = items.slice(i, i + 4);
+        const sheetNo = Math.floor(i / 4) + 1;
+
+        previewHTML += `
+          <div class="bg-white p-3 sm:p-4 rounded-3xl shadow-xl border border-slate-300 space-y-2 max-w-4xl mx-auto">
+            <div class="flex justify-between items-center text-xs text-slate-500 pb-1.5 border-b border-slate-100">
+              <span class="font-bold text-slate-800 text-xs sm:text-sm">แผ่นที่ ${sheetNo} / ${totalSheets} (A4 แนวนอน)</span>
+              <span class="text-[11px] text-slate-400">แก้ไขตัวเลขราคาเพื่อดู % ได้ทันที</span>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 bg-slate-100 p-2.5 rounded-2xl border border-slate-300">
+              ${sheetItems.map(item => `
+                <div class="rounded-2xl overflow-hidden shadow-md" style="aspect-ratio: 1.414 / 1; min-height: 235px;">
+                  ${generateSinglePremiumCard(item, false)}
+                </div>
+              `).join('')}
+              ${sheetItems.length < 4 ? Array(4 - sheetItems.length).fill(0).map(() => `
+                <div class="border-2 border-dashed border-slate-300 bg-white/40 rounded-2xl flex items-center justify-center text-slate-400 text-xs font-medium" style="aspect-ratio: 1.414 / 1;">
+                  ช่องว่างสำหรับตัด
+                </div>
+              `).join('') : ''}
+            </div>
+          </div>
+        `;
+
+        printHTML += `
+          <div class="a4-print-sheet">
+            ${sheetItems.map(item => `
+              <div class="print-tag-cell">
+                ${generateSinglePremiumCard(item, true)}
+              </div>
+            `).join('')}
+            ${sheetItems.length < 4 ? Array(4 - sheetItems.length).fill(0).map(() => `
+              <div class="print-tag-cell border border-dashed border-slate-200"></div>
+            `).join('') : ''}
+          </div>
+        `;
+      }
+
+      previewContainer.innerHTML = previewHTML;
+      printContainer.innerHTML = printHTML;
+    }
+
+    function openModal(itemNo) {
+      const item = rawItems.find(r => r.itemNo === itemNo); if (!item) return;
+      const statusInfo = AGING_STATUS_MAP[item.agingStatus] || { label: item.agingStatus, color: 'bg-slate-100 text-slate-700' };
+
+      document.getElementById('modalDeptBadge').innerText = `Dept ${item.deptNo}`;
+      document.getElementById('modalClassBadge').innerText = item.classNo ? `Class ${item.classNo} - ${item.classDesc}` : item.classDesc;
+      document.getElementById('modalItemNo').innerText = `SKU: ${item.itemNo}`;
+      
+      const modalBadge = document.getElementById('modalStatusBadge');
+      modalBadge.innerText = statusInfo.label;
+      modalBadge.className = `px-2 py-0.5 rounded-md text-[10px] font-semibold border ${statusInfo.color}`;
+
+      document.getElementById('modalItemDesc').innerText = item.itemDesc;
+      document.getElementById('modalSupplier').innerText = item.supplier;
+      document.getElementById('modalBuyer').innerText = item.buyer;
+      document.getElementById('modalBrand').innerText = item.ownBrand;
+      document.getElementById('modalUom').innerText = item.uom;
+      document.getElementById('modalStockQty').innerText = formatNumber(item.stockQty);
+      document.getElementById('modalWac').innerText = formatCurrency(item.buyPrice);
+      document.getElementById('modalSelling').innerText = formatCurrency(item.sellPrice);
+      document.getElementById('modalGrandTotal').innerText = formatCurrency(item.grandTotal);
+      document.getElementById('modalLastDelivery').innerText = item.lastDelivery;
+      document.getElementById('modalLastSold').innerText = item.lastSold;
+      document.getElementById('modalAgingDays').innerText = `${item.agingDays} วัน`;
+      document.getElementById('modalNbsDays').innerText = `${item.nbsDays} วัน`;
+      document.getElementById('modalAgingProv').innerText = formatCurrency(item.agingProvision);
+      document.getElementById('modalNbsProv').innerText = formatCurrency(item.nbsProvision);
+      document.getElementById('modalTotalProv').innerText = formatCurrency(item.totalProvision);
+      document.getElementById('itemDetailModal').classList.remove('hidden'); refreshIcons();
+    }
+
+    function closeModal() { document.getElementById('itemDetailModal').classList.add('hidden'); }
+
+    function exportFilteredCSV() {
+      if (filteredItems.length === 0) { alert('ไม่มีข้อมูลสำหรับส่งออก'); return; }
+      const ws = XLSX.utils.json_to_sheet(filteredItems.map(i => ({ 
+        'Item No': i.itemNo, 
+        'Item Desc': i.itemDesc, 
+        'Dept No': i.deptNo, 
+        'Department': i.department,
+        'Class No': i.classNo,
+        'Class Desc': i.classDesc,
+        'Aging Status': i.agingStatus,
+        'Stock Qty': i.stockQty,
+        'Normal Price (WAC)': i.buyPrice,
+        'Current Selling Price': i.sellPrice,
+        'Discount %': `${i.discountPct}%`,
+        'Aging Days': i.agingDays,
+        'Grand Total (THB)': i.grandTotal, 
+        'Total Provision (THB)': i.totalProvision 
+      })));
+      const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Report');
+      XLSX.writeFile(wb, 'Aging_NBS_Report.xlsx');
+    }
+
+    function captureDashboard() {
+      const target = document.getElementById('captureArea');
+      const originalBtnText = document.getElementById('captureBtn').innerHTML;
+      document.getElementById('captureBtn').innerHTML = `<i data-lucide="loader" class="w-3.5 h-3.5 animate-spin"></i> <span>กำลังแคป...</span>`;
+      refreshIcons();
+
+      html2canvas(target, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#f8fafc'
+      }).then(canvas => {
+        const image = canvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.download = `Dashboard_${currentTab}_${new Date().toISOString().slice(0,10)}.png`;
+        link.href = image;
+        link.click();
+        document.getElementById('captureBtn').innerHTML = originalBtnText;
+        refreshIcons();
+      }).catch(err => {
+        alert('เกิดข้อผิดพลาดในการบันทึกภาพ');
+        document.getElementById('captureBtn').innerHTML = originalBtnText;
+        refreshIcons();
+      });
+    }
+
+    function updateUI() {
+      updateKPIs();
+      renderVisibleTabCharts();
+      renderTable();
+      updateSelectionUI();
+      refreshIcons();
+    }
+
+    // Google Sheets Live Loader
+    async function loadFixedGoogleSheet() {
+      showLoading(true, 'กำลังเชื่อมต่อ Google Sheets...', 'กำลังดึงข้อมูลล่าสุดจากสต็อก');
+
+      const targetUrls = [
+        `https://docs.google.com/spreadsheets/d/${FIXED_SHEET_ID}/gviz/tq?tqx=out:csv`,
+        `https://docs.google.com/spreadsheets/d/${FIXED_SHEET_ID}/export?format=csv`,
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://docs.google.com/spreadsheets/d/${FIXED_SHEET_ID}/gviz/tq?tqx=out:csv`)}`
+      ];
+
+      let csvText = null;
+      let fetchSuccess = false;
+
+      for (const url of targetUrls) {
+        try {
+          const response = await fetch(url);
+          if (response.ok) {
+            const text = await response.text();
+            if (text && !text.includes('<!DOCTYPE html>') && !text.includes('accounts.google.com')) {
+              csvText = text;
+              fetchSuccess = true;
+              break;
+            }
+          }
+        } catch (e) {
+          console.warn('Endpoint retry...', e);
+        }
+      }
+
+      if (!fetchSuccess || !csvText) {
+        showLoading(false);
+        document.getElementById('dropZoneContainer').classList.remove('hidden');
+        document.getElementById('dashboardContent').classList.add('hidden');
+        alert('⚠️ ไม่สามารถดึงข้อมูลได้ โปรดตรวจสอบว่าได้ตั้งค่าแชร์ Google Sheet เป็น "ทุกคนที่มีลิงก์มีสิทธิ์อ่าน (Viewer)" แล้วหรือยัง');
+        return;
+      }
+
+      try {
+        const workbook = XLSX.read(csvText, { type: 'string' });
+        const firstSheetName = workbook.SheetNames[0];
+        const json = XLSX.utils.sheet_to_json(workbook.Sheets[firstSheetName]);
+
+        if (!json || json.length === 0) throw new Error('ไม่พบแถวข้อมูลในชีต');
+
+        rawItems = json.filter(row => !isSummaryRow(row)).map(cleanRow);
+        filteredItems = [...rawItems];
+
+        document.getElementById('dropZoneContainer').classList.add('hidden');
+        document.getElementById('dashboardContent').classList.remove('hidden');
+
+        populateDropdowns(rawItems);
+        updateUI();
+        showLoading(false);
+      } catch (err) {
+        showLoading(false);
+        document.getElementById('dropZoneContainer').classList.remove('hidden');
+        document.getElementById('dashboardContent').classList.add('hidden');
+        alert('เกิดข้อผิดพลาดในการประมวลผลข้อมูล: ' + err.message);
+      }
+    }
+
+    // Event Listeners
+    document.getElementById('globalSearch').addEventListener('input', applyFilters);
+    
+    document.getElementById('filterDept').addEventListener('change', (e) => {
+      updateClassDropdown(rawItems, e.target.value);
+      applyFilters();
+    });
+    
+    document.getElementById('filterClass').addEventListener('change', applyFilters);
+    document.getElementById('filterAgingStatus').addEventListener('change', applyFilters);
+    document.getElementById('filterRisk').addEventListener('change', applyFilters);
+    document.getElementById('captureBtn').addEventListener('click', captureDashboard);
+    document.getElementById('exportCsvBtn').addEventListener('click', exportFilteredCSV);
+    document.getElementById('openClearanceBtn').addEventListener('click', openClearanceModal);
+    
+    document.getElementById('resetFilters').addEventListener('click', () => { 
+      document.getElementById('globalSearch').value = ''; 
+      document.getElementById('filterDept').value = ''; 
+      updateClassDropdown(rawItems, '');
+      document.getElementById('filterClass').value = ''; 
+      document.getElementById('filterAgingStatus').value = ''; 
+      document.getElementById('filterRisk').value = ''; 
+      applyFilters(); 
+    });
+
+    document.getElementById('btnPrevPage').addEventListener('click', () => { if (currentPage > 1) { currentPage--; renderTable(); } });
+    document.getElementById('btnNextPage').addEventListener('click', () => { currentPage++; renderTable(); });
+
+    // Auto-fetch data on start
+    window.addEventListener('DOMContentLoaded', () => {
+      refreshIcons();
+      loadFixedGoogleSheet();
+    });
+  </script>
+</body>
+</html>
